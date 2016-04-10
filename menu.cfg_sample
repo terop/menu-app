@@ -1,0 +1,6 @@
+DEBUG = False
+# Database settings
+DB_HOST = 'localhost'
+DB_USER = 'foobar'
+DB_PASSWORD = 'passw0rd123'
+DB_NAME = 'menu'

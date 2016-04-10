@@ -1,0 +1,25 @@
+{
+    "backendUrl": "http://localhost:5001/add",
+    "restaurants": [
+        {
+            "type": "amica",
+            "name": "Amica TUAS",
+            "costNumber": "0199"
+        },
+        {
+            "type": "amica",
+            "name": "Amica Laurea",
+            "costNumber": "3292"
+        },
+        {
+            "type": "antell",
+            "name": "Antell Maari",
+            "id": "149"
+        },
+        {
+            "type": "antell",
+            "name": "Antell Spektri",
+            "id": "90"
+        }
+    ]
+}

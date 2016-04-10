@@ -103,10 +103,13 @@ def main():
     config = json.load(open(args.config, 'r'))
     all_menus = get_menus(config['restaurants'])
 
-    resp = requests.post(config['backendUrl'], data=all_menus, timeout=5)
+    resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
     timestamp = datetime.now().isoformat()
-    print('{0}: Menu extraction {1}'.
-          format(timestamp, 'succeeded' if resp.ok else 'failed'))
+    if not resp.ok:
+        print('{0}: Menu extraction failed'.format(timestamp))
+    else:
+        print('{0}: Menu extraction success status: {1}'.
+              format(timestamp, resp.text.lower()))
 
 
 if __name__ == '__main__':
