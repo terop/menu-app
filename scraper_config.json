@@ -1,5 +1,5 @@
 {
-    "backendUrl": "http://localhost:5001/add",
+    "backendUrl": "http://localhost:5000/add",
     "restaurants": [
         {
             "type": "amica",

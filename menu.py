@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Module for running Flask in the menu application."""
 
+from datetime import date
 from flask import Flask, render_template, request
 import db
 
@@ -18,6 +19,10 @@ DB_SETTINGS = {'database': app.config['DB_NAME'],
 def index():
     """Index route."""
     args = {}
+
+    menu = db.get_menus(DB_SETTINGS, date.today().isoformat())
+    if menu:
+        args['menu'] = menu
 
     return render_template('index.tmpl', **args)
 
