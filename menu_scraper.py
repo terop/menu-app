@@ -111,8 +111,12 @@ def main():
     if not resp.ok:
         print('{0}: Menu extraction failed'.format(timestamp))
     else:
-        print('{0}: Menu extraction success status: {1}'.
-              format(timestamp, resp.text.lower()))
+        status = resp.json()
+        if status['status'] == 'success':
+            print('{0}: Menu extraction succeeded'.format(timestamp))
+        else:
+            print('{0}: Menu extraction failed, error: {1}'.
+                  format(timestamp, status['cause']))
 
 
 if __name__ == '__main__':

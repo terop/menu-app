@@ -2,7 +2,7 @@
 """Module for running Flask in the menu application."""
 
 from datetime import date
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 import db
 
 app = Flask(__name__)
@@ -36,7 +36,15 @@ def index():
 @app.route('/add', methods=['POST'])
 def add():
     """Add menus route."""
-    return str(db.insert_menu(DB_SETTINGS, request.get_json()))
+    if not request.get_json():
+        return jsonify(status='error',
+                       cause='invalid json')
+    retval = db.insert_menu(DB_SETTINGS, request.get_json())
+    if retval:
+        return jsonify(status='success')
+    else:
+        return jsonify(status='error',
+                       cause='database error')
 
 
 if __name__ == '__main__':
