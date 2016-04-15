@@ -4,6 +4,7 @@ restaurant menus. Menus are sent to a backend service for storage and
 display."""
 
 import argparse
+import itertools
 import json
 from datetime import date, datetime, timedelta
 import requests
@@ -71,6 +72,8 @@ def get_amica_menu(name, cost_number):
 
             for j in range(len(day_menu['SetMenus'])):
                 menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
+            # Flatten nested lists
+            menu[menu_date] = list(itertools.chain(*menu[menu_date]))
 
     return {'name': name, 'menu': menu}
 
