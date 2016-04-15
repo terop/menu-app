@@ -2,18 +2,35 @@
 <html>
     <head>
         <title>Otaniemi menu</title>
+        <link rel="stylesheet" type="text/css"
+              href="https://fonts.googleapis.com/css?family=Open+Sans">
         <style>
             body {
                 width: 90%;
+                font-family: 'Open Sans', serif;
             }
-            /* th {
-               text-align: left;
-               padding-right: 15px;
-               } */
+            ul {
+                list-style-type: none;
+            }
+            .boldText {
+                font-weight: bold;
+            }
         </style>
     </head>
     <body>
-        <h3>Otaniemi menu</h3>
-        <p>{{ menu }}</p>
+        <h2>Otaniemi menu</h2>
+        <p>{{ date }}</p>
+        {% if not menu %}
+            <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
+        {% else %}
+            {% for rest in menu  %}
+                <p class="boldText">{{ rest[0] }}</p>
+                <ul>
+                    {% for course in rest[1] %}
+                        <li>{{ course }}</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% endif %}
     </body>
 </html>

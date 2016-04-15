@@ -20,9 +20,15 @@ def index():
     """Index route."""
     args = {}
 
-    menu = db.get_menus(DB_SETTINGS, date.today().isoformat())
-    if menu:
-        args['menu'] = menu
+    today = date.today().isoformat()
+    args['date'] = date.today().strftime('%d.%m.%Y')
+    menus = db.get_menus(DB_SETTINGS, today)
+    if menus:
+        menu_data = []
+        for menu in menus[2]:
+            if today in list(menu['menu'].keys()):
+                menu_data.append([menu['name'], menu['menu'][today]])
+        args['menu'] = menu_data
 
     return render_template('index.tmpl', **args)
 
