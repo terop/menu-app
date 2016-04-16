@@ -18,19 +18,38 @@
         </style>
     </head>
     <body>
+        {% if week %}
+            <p><a href="/?day=true">Show current day</a></p>
+        {% else %}
+            <p><a href="/?week=true">Show full week</a></p>
+        {% endif %}
         <h2>Otaniemi menu</h2>
         <p>{{ date }}</p>
         {% if not menu %}
             <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
         {% else %}
-            {% for rest in menu  %}
-                <p class="boldText">{{ rest[0] }}</p>
-                <ul>
-                    {% for course in rest[1] %}
-                        <li>{{ course }}</li>
+            {% if week %}
+                {% for day, menus in menu.items() %}
+                    <h3>{{ day }}</h3>
+                    {% for menu in menus %}
+                        <p class="boldText">{{ menu.name }}</p>
+                        <ul>
+                            {% for course in menu.menu %}
+                                <li>{{ course }}</li>
+                            {% endfor %}
+                        </ul>
                     {% endfor %}
-                </ul>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                {% for rest in menu  %}
+                    <p class="boldText">{{ rest[0] }}</p>
+                    <ul>
+                        {% for course in rest[1] %}
+                            <li>{{ course }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            {% endif %}
         {% endif %}
     </body>
 </html>

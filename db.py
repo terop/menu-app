@@ -32,7 +32,7 @@ def insert_menu(db_config, menus):
 
 def get_menus(db_config, current_date):
     """Returns menus from the database which """
-    query = 'SELECT start_date, end_date, menu FROM menus WHERE %s BETWEEN start_date AND end_date'
+    query = 'SELECT menu FROM menus WHERE %s BETWEEN start_date AND end_date'
 
     try:
         conn = psycopg2.connect(**db_config)

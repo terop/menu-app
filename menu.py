@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Module for running Flask in the menu application."""
 
-from datetime import date
+from collections import OrderedDict
+from datetime import date, datetime
 from flask import Flask, jsonify, render_template, request
 import db
 
@@ -21,15 +22,15 @@ def index():
     args = {}
 
     today = date.today().isoformat()
-    args['date'] = date.today().strftime('%d.%m.%Y')
     menus = db.get_menus(DB_SETTINGS, today)
-    if menus:
-        menu_data = []
-        for menu in menus[2]:
-            if today in list(menu['menu'].keys()):
-                menu_data.append([menu['name'], menu['menu'][today]])
-        args['menu'] = menu_data
+    show_week = 'week' in request.args and request.args['week'] == 'true'
+    args['date'] = date.today().strftime('%d.%m.%Y')
+    args['week'] = show_week
 
+    menu = None
+    if menus:
+        menu = format_menu(menus, show_week)
+        args['menu'] = menu
     return render_template('index.tmpl', **args)
 
 
@@ -45,6 +46,33 @@ def add():
     else:
         return jsonify(status='error',
                        cause='database error')
+
+
+def format_menu(menus, show_week=False):
+    """Format menu data for easier display."""
+    if show_week:
+        week_menu = {}
+        for menu in menus[0]:
+            for day in menu['menu']:
+                if day not in week_menu:
+                    week_menu[day] = []
+                week_menu[day].append({'name': menu['name'],
+                                       'menu': menu['menu'][day]})
+        # Reformat dates
+        week_menu_format = {}
+        for key in week_menu.keys():
+            new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
+            week_menu_format[new_date] = week_menu[key]
+        del week_menu
+        week_menu_format = OrderedDict(sorted(week_menu_format.items()))
+        return week_menu_format
+    else:
+        menu_data = []
+        today = date.today().isoformat()
+        for menu in menus[0]:
+            if today in list(menu['menu'].keys()):
+                menu_data.append([menu['name'], menu['menu'][today]])
+        return menu_data
 
 
 if __name__ == '__main__':
