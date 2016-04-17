@@ -46,7 +46,7 @@ def add():
         return jsonify(status='success')
     else:
         return jsonify(status='error',
-                       cause='database error')
+                       cause='insert error')
 
 
 def format_menu(menus, show_week=False):

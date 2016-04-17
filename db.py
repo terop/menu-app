@@ -22,6 +22,9 @@ class Menu(Base):
 def insert_menu(session, menus):
     """Inserts a menu into the database. Returns True on success and False
     on error."""
+    if len(menus) == 0 or 'menu' not in menus[0]:
+        return False
+
     start_date = min([min(menu['menu'].keys()) for menu in menus])
     end_date = max([max(menu['menu'].keys()) for menu in menus])
 
