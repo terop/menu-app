@@ -4,15 +4,14 @@
 from collections import OrderedDict
 from datetime import date, datetime
 from flask import Flask, jsonify, render_template, request
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import db
 
 app = Flask(__name__)
 app.config.from_pyfile('menu.cfg')
-
-DB_SETTINGS = {'database': app.config['DB_NAME'],
-               'user': app.config['DB_USER'],
-               'password': app.config['DB_PASSWORD'],
-               'host': app.config['DB_HOST']}
+engine = create_engine(app.config['DB_CON_STRING'])
+Session = sessionmaker(bind=engine)
 
 
 # Routes
@@ -22,7 +21,7 @@ def index():
     args = {}
 
     today = date.today().isoformat()
-    menus = db.get_menus(DB_SETTINGS, today)
+    menus = db.get_menus(Session(), today)
     show_week = 'week' in request.args and request.args['week'] == 'true'
     args['date'] = date.today().strftime('%d.%m.%Y')
     args['week'] = show_week
@@ -40,7 +39,7 @@ def add():
     if not request.get_json():
         return jsonify(status='error',
                        cause='invalid json')
-    retval = db.insert_menu(DB_SETTINGS, request.get_json())
+    retval = db.insert_menu(Session(), request.get_json())
     if retval:
         return jsonify(status='success')
     else:
@@ -64,8 +63,8 @@ def format_menu(menus, show_week=False):
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = week_menu[key]
         del week_menu
-        week_menu_format = OrderedDict(sorted(week_menu_format.items()))
-        return week_menu_format
+        week_menu_ordered = OrderedDict(sorted(week_menu_format.items()))
+        return week_menu_ordered
     else:
         menu_data = []
         today = date.today().isoformat()

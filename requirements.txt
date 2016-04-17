@@ -3,3 +3,4 @@ beautifulsoup4
 requests
 Flask
 psycopg2
+SQLAlchemy
