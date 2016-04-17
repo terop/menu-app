@@ -18,7 +18,9 @@ Session = sessionmaker(bind=engine)
 @app.route('/')
 def index():
     """Index route."""
-    args = {}
+    title = app.config['MENU_PAGE_TITLE'] if 'MENU_PAGE_TITLE' in app.config \
+        else 'Change me!'
+    args = {'title': title}
 
     today = date.today().isoformat()
     menus = db.get_menus(Session(), today)

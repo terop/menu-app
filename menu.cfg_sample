@@ -1,3 +1,4 @@
 DEBUG = False
+MENU_PAGE_TITLE = 'Foobar menu'
 # Database settings
 DB_CON_STRING = 'postgresql+psycopg2://username:pwd@host:5432/dbname'

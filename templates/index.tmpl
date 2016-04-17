@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Otaniemi menu</title>
+        <title>{{ title }}</title>
         <link rel="stylesheet" type="text/css"
               href="https://fonts.googleapis.com/css?family=Open+Sans">
         <style>
@@ -23,7 +23,7 @@
         {% else %}
             <p><a href="/?week=true">Show full week</a></p>
         {% endif %}
-        <h2>Otaniemi menu</h2>
+        <h2>{{ title }}</h2>
         <p>{{ date }}</p>
         {% if not menu %}
             <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
