@@ -42,8 +42,9 @@ def insert_menu(session, menus):
         session.close()
 
 
-def get_menus(session, current_date):
-    """Returns menus from the database which """
+def get_menu(session, current_date):
+    """Return the first menu for the current date between the start and
+    end dates."""
 
     try:
         query = session.query(Menu.menu).filter(and_(Menu.start_date <= current_date,

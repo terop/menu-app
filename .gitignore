@@ -3,3 +3,6 @@ GPATH
 GRTAGS
 GTAGS
 menu.cfg
+.cache/
+test/test.cfg
+menu_app.egg-info/
