@@ -20,7 +20,8 @@ def index():
     """Index route."""
     title = app.config['MENU_PAGE_TITLE'] if 'MENU_PAGE_TITLE' in app.config \
         else 'Change me!'
-    args = {'title': title}
+    args = {'title': title,
+            'root': app.config['APPLICATION_ROOT']}
 
     today = date.today().isoformat()
     menus = db.get_menu(Session(), today)

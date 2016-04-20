@@ -19,9 +19,9 @@
     </head>
     <body>
         {% if week %}
-            <p><a href="/?day=true">Show current day</a></p>
+            <p><a href="{{ root }}/?day=true">Show current day</a></p>
         {% else %}
-            <p><a href="/?week=true">Show full week</a></p>
+            <p><a href="{{ root }}/?week=true">Show full week</a></p>
         {% endif %}
         <h2>{{ title }}</h2>
         <p>{{ date }}</p>
