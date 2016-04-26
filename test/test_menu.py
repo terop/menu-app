@@ -26,7 +26,7 @@ def session(request):
         session.query(db.Menu).delete()
         session.commit()
         session.close()
-        request.addfinalizer(finalizer)
+    request.addfinalizer(finalizer)
 
     return Session()
 
