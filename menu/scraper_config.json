@@ -20,6 +20,11 @@
             "type": "antell",
             "name": "Antell Spektri",
             "id": "90"
+        },
+        {
+            "type": "sodexo",
+            "name": "Sodexo Tietotekniikantalo",
+            "id": "142"
         }
     ]
 }

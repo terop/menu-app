@@ -78,8 +78,37 @@ def get_amica_menu(name, cost_number):
     return {'name': name, 'menu': menu}
 
 
+def get_sodexo_menu(name, restaurant_id):
+    """Fetches the current weeks menu for a Sodexo restaurant from its
+    JSON formatted menu."""
+    base_url = "http://www.sodexo.fi/ruokalistat/output/daily_json/"
+    monday = date.today()
+    menus = {}
+
+    if monday.weekday() != 0:
+        monday -= timedelta(days=monday.weekday())
+
+    for i in range(0, 5):
+        day = monday + timedelta(days=i)
+        full_url = '{0}{1}/{2}/fi'.format(base_url, restaurant_id,
+                                          day.strftime('%Y/%m/%d'))
+
+        resp = requests.get(full_url)
+        if not resp.ok:
+            return {}
+
+        json_menu = resp.json()
+        if len(json_menu['courses']) > 2:
+            # No menu for today, the restaurant is probably closed
+            courses = [course['title_fi'] for course in json_menu['courses']]
+            menus[day.isoformat()] = courses
+
+    return {'name': name, 'menu': menus}
+
+
 def get_menus(restaurants):
-    """Returns menus of all restaurants given in the configuration."""
+    """Returns menus of all restaurants given in the configuration.
+    Restaurant types are: amica, antell, sodexo."""
     menus = []
     menu = {}
 
@@ -88,6 +117,8 @@ def get_menus(restaurants):
             menu = get_amica_menu(res['name'], res['costNumber'])
         elif res['type'] == 'antell':
             menu = parse_antell_menu(res['name'], res['id'])
+        elif res['type'] == 'sodexo':
+            menu = get_sodexo_menu(res['name'], res['id'])
 
         if len(menu) >= 1:
             # Ignore empty menus denoting an error
