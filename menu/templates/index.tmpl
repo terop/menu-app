@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <title>{{ title }}</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
               integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -9,6 +13,7 @@
         <style>
             body {
                 width: 90%;
+                padding-top: 50px;
                 margin-left: 15px;
             }
             ul {
@@ -20,12 +25,27 @@
         </style>
     </head>
     <body>
-        {% if week %}
-            <p><a href="{{ root }}/?day=true">Show current day</a></p>
-        {% else %}
-            <p><a href="{{ root }}/?week=true">Show full week</a></p>
-        {% endif %}
-        <h2>{{ title }} - {% if week %}week{% else %}day{% endif %}</h2>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">{{ title }}</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li {% if not week %}class="active"{% endif %}><a href="{{ root }}/?day=true">Day menu</a></li>
+                        <li {% if week %}class="active"{% endif %}><a href="{{ root }}/?week=true">Week menu</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <h3>{% if week %}Week menu{% else %}Day menu{% endif %}</h3>
         <p>Today's date is {{ date }}</p>
         {% if not menu %}
             <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
