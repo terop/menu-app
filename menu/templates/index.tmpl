@@ -2,12 +2,14 @@
 <html>
     <head>
         <title>{{ title }}</title>
-        <link rel="stylesheet" type="text/css"
-              href="https://fonts.googleapis.com/css?family=Open+Sans">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+              integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
+              integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
         <style>
             body {
                 width: 90%;
-                font-family: 'Open Sans', serif;
+                margin-left: 15px;
             }
             ul {
                 list-style-type: none;
@@ -23,33 +25,48 @@
         {% else %}
             <p><a href="{{ root }}/?week=true">Show full week</a></p>
         {% endif %}
-        <h2>{{ title }}</h2>
-        <p>{{ date }}</p>
+        <h2>{{ title }} - {% if week %}week{% else %}day{% endif %}</h2>
+        <p>Today's date is {{ date }}</p>
         {% if not menu %}
             <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
         {% else %}
             {% if week %}
                 {% for day, menus in menu.items() %}
-                    <h3>{{ day }}</h3>
-                    {% for menu in menus %}
-                        <p class="boldText">{{ menu.name }}</p>
-                        <ul>
-                            {% for course in menu.menu %}
-                                <li>{{ course }}</li>
+                    <h4>{{ day }}</h4>
+                    {% for menu_row in menus|slice((menus|length // 3) + 1) %}
+                        <div class="row">
+                            {% for menu in menu_row %}
+                                <div class="col-md-4">
+                                    <p class="boldText">{{ menu.name }}</p>
+                                    <ul>
+                                        {% for course in menu.menu %}
+                                            <li>{{ course }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
                             {% endfor %}
-                        </ul>
+                        </div>
                     {% endfor %}
                 {% endfor %}
             {% else %}
-                {% for rest in menu  %}
-                    <p class="boldText">{{ rest[0] }}</p>
-                    <ul>
-                        {% for course in rest[1] %}
-                            <li>{{ course }}</li>
+                {% for rest_row in menu|slice((menu|length // 3) + 1) %}
+                    <div class="row">
+                        {% for rest in rest_row %}
+                            <div class="col-md-4">
+                                <p class="boldText">{{ rest[0] }}</p>
+                                <ul>
+                                    {% for course in rest[1] %}
+                                        <li>{{ course }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endif %}
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+                integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     </body>
 </html>
