@@ -39,7 +39,7 @@ def parse_antell_menu(name, restaurant_id):
 
     for i in range(5):
         rows = days[i].find_all(content_filter)
-        if len(rows) > 2:
+        if len(rows) > 3:
             day = menu_days[i]
             courses = [rows[j].text.split('\r')[0].strip() for j
                        in range(1, len(rows))]
@@ -72,6 +72,7 @@ def get_amica_menu(name, cost_number):
 
             for j in range(len(day_menu['SetMenus'])):
                 menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
+
             # Flatten nested lists
             menu[menu_date] = list(itertools.chain(*menu[menu_date]))
 
@@ -106,6 +107,44 @@ def get_sodexo_menu(name, restaurant_id):
     return {'name': name, 'menu': menus}
 
 
+def parse_taffa_menu(name, url):
+    """Extracts the menu of Täffä from their web site. Due to the
+    'non-continuous' menu structure each day must be checked to ensure
+    that they belong to the same week."""
+    monday = date.today()
+    menus = {}
+
+    if monday.weekday() != 0:
+        monday -= timedelta(days=monday.weekday())
+        days = [monday + timedelta(days=i) for i in range(0, 5)]
+
+    resp = requests.get(url)
+    if not resp.ok:
+        return {}
+
+    soup = BeautifulSoup(resp.content, 'lxml')
+    week_menu = soup.find(id='week')
+
+    for child in week_menu.children:
+        if child.name == 'p':
+            # A day name
+            split_day = child.string.split(' ')[1].split('.')
+            day_date = date(int(split_day[2]), int(split_day[1]),
+                            int(split_day[0]))
+            if day_date in days:
+                day_menu = []
+                for item in child.next_sibling.next_sibling.children:
+                    if len(item.string) > 3:
+                        # Skip newlines
+                        day_menu.append(item.string)
+                if len(day_menu) > 2:
+                    # Need to have enough courses to ensure that the
+                    # restaurant is open
+                    menus[day_date.isoformat()] = day_menu
+
+    return {'name': name, 'menu': menus}
+
+
 def get_menus(restaurants):
     """Returns menus of all restaurants given in the configuration.
     Restaurant types are: amica, antell, sodexo."""
@@ -119,6 +158,8 @@ def get_menus(restaurants):
             menu = parse_antell_menu(res['name'], res['id'])
         elif res['type'] == 'sodexo':
             menu = get_sodexo_menu(res['name'], res['id'])
+        elif res['type'] == 'taffa':
+            menu = parse_taffa_menu(res['name'], res['url'])
 
         if len(menu) >= 1:
             # Ignore empty menus denoting an error

@@ -25,6 +25,11 @@
             "type": "sodexo",
             "name": "Sodexo Tietotekniikantalo",
             "id": "142"
+        },
+        {
+            "type": "taffa",
+            "name": "Täffä",
+            "url": "https://www.teknologforeningen.fi"
         }
     ]
 }
