@@ -19,9 +19,6 @@
             ul {
                 list-style-type: none;
             }
-            .boldText {
-                font-weight: bold;
-            }
         </style>
     </head>
     <body>
@@ -46,9 +43,11 @@
         </nav>
 
         <h3>{% if week %}Week menu{% else %}Day menu{% endif %}</h3>
-        <p>Today's date is {{ date }}</p>
+        <p>Today's date is {{ date }}.</p>
         {% if not menu %}
-            <p style="color: red; font-weight: bold;">Unfortunately there is no menu to show for today</p>
+            <div class="alert alert-danger" role="alert">
+                Unfortunately there are no menus to show for today.
+            </div>
         {% else %}
             {% if week %}
                 {% for day, menus in menu.items() %}
@@ -57,7 +56,7 @@
                         <div class="row">
                             {% for menu in menu_row %}
                                 <div class="col-md-4">
-                                    <p class="boldText">{{ menu.name }}</p>
+                                    <strong>{{ menu.name }}</strong>
                                     <ul>
                                         {% for course in menu.menu %}
                                             <li>{{ course }}</li>
@@ -73,7 +72,7 @@
                     <div class="row">
                         {% for rest in rest_row %}
                             <div class="col-md-4">
-                                <p class="boldText">{{ rest[0] }}</p>
+                                <strong>{{ rest[0] }}</strong>
                                 <ul>
                                     {% for course in rest[1] %}
                                         <li>{{ course }}</li>
