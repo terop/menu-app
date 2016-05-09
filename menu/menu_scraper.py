@@ -116,7 +116,7 @@ def parse_taffa_menu(name, url):
 
     if monday.weekday() != 0:
         monday -= timedelta(days=monday.weekday())
-        days = [monday + timedelta(days=i) for i in range(0, 5)]
+    days = [monday + timedelta(days=i) for i in range(0, 5)]
 
     resp = requests.get(url)
     if not resp.ok:
