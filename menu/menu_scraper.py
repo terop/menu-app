@@ -123,8 +123,24 @@ def parse_taffa_menu(name, url):
         return {}
 
     soup = BeautifulSoup(resp.content, 'lxml')
-    week_menu = soup.find(id='week')
+    # First (or current) day of week
+    today_menu = soup.find(class_='todays-menu')
+    split_day = today_menu.find('p').text.split(' ')[1].split('.')
+    day_date = date(int(split_day[2]), int(split_day[1]),
+                    int(split_day[0]))
+    if day_date in days:
+        day_menu = []
+        for course in today_menu.find('ul'):
+            if len(course.string) > 3:
+                # Skip newlines
+                day_menu.append(course.string)
+        if len(day_menu) > 2:
+            # Need to have enough courses to ensure that the
+            # restaurant is open
+            menus[day_date.isoformat()] = day_menu
 
+    # Remaining days
+    week_menu = soup.find(id='week')
     for child in week_menu.children:
         if child.name == 'p':
             # A day name
