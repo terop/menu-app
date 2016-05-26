@@ -71,6 +71,8 @@ def get_amica_menu(name, cost_number):
             menu[menu_date] = []
 
             for j in range(len(day_menu['SetMenus'])):
+                # List wrap to prevent flattening of strings
+                menu[menu_date].append([day_menu['SetMenus'][j]['Name']])
                 menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
 
             # Flatten nested lists
