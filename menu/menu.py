@@ -26,7 +26,7 @@ def index():
     today = date.today().isoformat()
     menus = db.get_menu(Session(), today)
     show_week = 'week' in request.args and request.args['week'] == 'true'
-    args['date'] = date.today().strftime('%d.%m.%Y')
+    args['date'] = date.today().strftime('%A %d.%m.%Y')
     args['week'] = show_week
 
     menu = None
