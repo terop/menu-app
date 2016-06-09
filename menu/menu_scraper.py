@@ -66,17 +66,23 @@ def get_amica_menu(name, cost_number):
     full_menu = resp.json()
     for i in range(len(full_menu['MenusForDays'])):
         day_menu = full_menu['MenusForDays'][i]
-        if len(day_menu['SetMenus']) > 1:
+        if len(day_menu['SetMenus']) > 0:
             menu_date = day_menu['Date'].split('T')[0]
             menu[menu_date] = []
 
             for j in range(len(day_menu['SetMenus'])):
-                # List wrap to prevent flattening of strings
-                menu[menu_date].append([day_menu['SetMenus'][j]['Name']])
-                menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
+                # Ensure there is at least one menu for the day
+                if len(day_menu['SetMenus'][j]['Components']) > 0:
+                    # List wrap to prevent flattening of strings
+                    menu[menu_date].append([day_menu['SetMenus'][j]['Name']])
+                    menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
 
-            # Flatten nested lists
-            menu[menu_date] = list(itertools.chain(*menu[menu_date]))
+            if len(menu[menu_date]) > 0:
+                # Flatten nested lists
+                menu[menu_date] = list(itertools.chain(*menu[menu_date]))
+            else:
+                # Delete empty menu
+                del menu[menu_date]
 
     return {'name': name, 'menu': menu}
 
