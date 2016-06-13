@@ -185,7 +185,7 @@ def get_menus(restaurants):
         elif res['type'] == 'taffa':
             menu = parse_taffa_menu(res['name'], res['url'])
 
-        if len(menu) >= 1:
+        if len(menu) >= 1 and len(menu['menu']) >= 1:
             # Ignore empty menus denoting an error
             menus.append(menu)
 
