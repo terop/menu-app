@@ -1,6 +1,6 @@
 """Module for handling database operations."""
 
-import sys
+import logging
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Date, Integer
 from sqlalchemy import exc, and_
@@ -36,7 +36,7 @@ def insert_menu(session, menus):
 
         return True
     except exc.SQLAlchemyError as err:
-        print('Error: menu insert failed: {0}'.format(err), file=sys.stderr)
+        logging.error('Error: menu insert failed: %s', err)
         return False
     finally:
         session.close()
@@ -51,7 +51,7 @@ def get_menu(session, current_date):
                                                      Menu.end_date >= current_date))
         return query.first()
     except exc.SQLAlchemyError as err:
-        print('Error: menu query failed: {0}'.format(err))
+        logging.error('Error: menu query failed: %s', err)
         return None
     finally:
         session.close()

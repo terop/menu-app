@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Module for running Flask in the menu application."""
 
+import logging
 from collections import OrderedDict
 from datetime import date, datetime
 from flask import Flask, jsonify, render_template, request
@@ -78,4 +79,8 @@ def format_menu(menus, show_week=False):
 
 
 if __name__ == '__main__':
+    # Set up logging
+    logging.basicConfig(filename='menu_server.log', level=logging.INFO,
+                        format='%(asctime)s %(message)s')
+    logging.info('Starting menu server')
     app.run(host='0.0.0.0')
