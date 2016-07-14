@@ -1,6 +1,7 @@
 
 build:
-	pip install -e .
+	docker build -t menu-app .
 
-tests: build
+tests:
+	pip install -e .
 	py.test tests/
