@@ -136,9 +136,9 @@ def parse_taffa_menu(name, url):
     soup = BeautifulSoup(resp.content, 'lxml')
     # First (or current) day of week
     today_menu = soup.find(class_='todays-menu')
-    split_day = today_menu.find('p').text.split(' ')[1].split('.')
-    day_date = date(int(split_day[2]), int(split_day[1]),
-                    int(split_day[0]))
+    day_date = datetime.strptime(today_menu.find('p').text.split(' ')[1],
+                                 '%d.%m.%Y').date()
+
     if day_date in days:
         day_menu = []
         for course in today_menu.find('ul'):
@@ -155,9 +155,9 @@ def parse_taffa_menu(name, url):
     for child in week_menu.children:
         if child.name == 'p':
             # A day name
-            split_day = child.string.split(' ')[1].split('.')
-            day_date = date(int(split_day[2]), int(split_day[1]),
-                            int(split_day[0]))
+            day_date = datetime.strptime(child.string.split(' ')[1],
+                                         '%d.%m.%Y').date()
+
             if day_date in days:
                 day_menu = []
                 for item in child.next_sibling.next_sibling.children:
