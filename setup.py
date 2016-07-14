@@ -11,5 +11,5 @@ setup(
     author_email='tero@nullspace.eu',
     url='https://github.com/terop/menu-app',
     license='MIT',
-    packages=['menu', 'test'],
+    packages=['menu', 'tests'],
 )

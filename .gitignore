@@ -4,7 +4,7 @@ GRTAGS
 GTAGS
 menu.cfg
 .cache/
-test/test.cfg
+tests/test.cfg
 menu_app.egg-info/
 # virtualenv ignore
 bin/

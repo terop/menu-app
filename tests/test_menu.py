@@ -13,8 +13,8 @@ def session(request):
     config = configparser.ConfigParser()
     # Ensure correct path to test configuration file
     cfg_file = 'test.cfg'
-    if Path.cwd().name != 'test':
-        cfg_file = 'test/{0}'.format(cfg_file)
+    if Path.cwd().name != 'tests':
+        cfg_file = 'tests/{0}'.format(cfg_file)
     config.read(cfg_file)
 
     engine = create_engine(config['db']['DB_CON_STRING'])
