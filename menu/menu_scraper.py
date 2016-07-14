@@ -6,6 +6,7 @@ display."""
 import argparse
 import itertools
 import json
+import re
 from datetime import date, datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
@@ -27,6 +28,7 @@ def parse_antell_menu(name, restaurant_id):
     i = 0
 
     while i < (last_day - first_day).days:
+        # pylint: disable=no-member
         menu_days.append((first_day + timedelta(days=i)).isoformat())
         i += 1
 
@@ -56,6 +58,7 @@ def get_amica_menu(name, cost_number):
     last_day = first_day + timedelta(days=5)
     menu = {}
 
+    # pylint: disable=no-member
     raw_url = 'http://www.amica.fi/modules/json/json/Index?costNumber={0}' \
               '&firstDay={1}&lastDay={2}&language=fi'. \
               format(cost_number, first_day.isoformat(), last_day.isoformat())
@@ -169,6 +172,35 @@ def parse_taffa_menu(name, url):
     return {'name': name, 'menu': menus}
 
 
+def parse_metropol_menu(name, url):
+    """Parses the menu for the current week for the Metropol lunch restaurant
+    in Innopoli 2 from the restaurant's web page."""
+    pattern = re.compile(r'([\w\s:;,-]+) \d+,\d+.+')
+    DAY_IDS = ['day-ma', 'day-ti', 'day-ke', 'day-to', 'day-pe']
+    menu = {}
+
+    resp = requests.get(url)
+    if not resp.ok:
+        return {}
+
+    soup = BeautifulSoup(resp.content, 'lxml')
+    for day_id in DAY_IDS:
+        day_date = soup.find(id=day_id).find('p').find('strong').text.split(' ')[1]
+        menu_list = soup.find(id=day_id).find_all('li')
+        day_menu = []
+
+        for item in menu_list:
+            match = re.match(pattern, item.text)
+            if match:
+                day_menu.append(match.groups()[0])
+
+        if len(day_menu) > 1:
+            parsed_date = datetime.strptime(day_date, '%d.%m.%Y').date()
+            menu[parsed_date.isoformat()] = day_menu
+
+    return {'name': name, 'menu': menu}
+
+
 def get_menus(restaurants):
     """Returns menus of all restaurants given in the configuration.
     Restaurant types are: amica, antell, sodexo."""
@@ -184,6 +216,8 @@ def get_menus(restaurants):
             menu = get_sodexo_menu(res['name'], res['id'])
         elif res['type'] == 'taffa':
             menu = parse_taffa_menu(res['name'], res['url'])
+        elif res['type'] == 'metropol':
+            menu = parse_metropol_menu(res['name'], res['url'])
 
         if len(menu) >= 1 and len(menu['menu']) >= 1:
             # Ignore empty menus denoting an error

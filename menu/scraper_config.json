@@ -30,6 +30,11 @@
             "type": "taffa",
             "name": "Täffä",
             "url": "https://www.teknologforeningen.fi"
+        },
+        {
+            "type": "metropol",
+            "name": "Metropol",
+            "url": "http://metropol.fi/otaniemi/lounas"
         }
     ]
 }
