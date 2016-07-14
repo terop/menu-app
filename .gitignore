@@ -6,3 +6,9 @@ menu.cfg
 .cache/
 test/test.cfg
 menu_app.egg-info/
+# virtualenv ignore
+bin/
+include/
+lib/
+lib64
+pip-selfcheck.json
