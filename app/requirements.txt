@@ -1,4 +1,3 @@
-requests
 Flask
 psycopg2
 SQLAlchemy
