@@ -1,5 +1,6 @@
 # menu-app
-A simple application for displaying lunch restaurant menus. Currently only Amica and Katri Antell restaurants are supported.
+A simple application for displaying lunch restaurant menus. Several restaurants are supported but each
+new restaurant usually requires new code to parse or get the restaurant's menu.
 
 ## Running
 The `menu_scraper.py` script is used fetch the menus. Fetching either means screen scraping or accessing an API, this depends on
