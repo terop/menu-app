@@ -17,7 +17,8 @@ def parse_antell_menu(name, restaurant_id):
     menu_url = 'http://www.antell.fi/lounaslistat/lounaslista.html?owner={0}'. \
                format(restaurant_id)
     resp = requests.get(menu_url)
-    if not resp.ok:
+    # Check for a failed request or a redirect
+    if not resp.ok or restaurant_id not in resp.url:
         return {}
 
     today = date.today()
