@@ -51,35 +51,37 @@ def parse_antell_menu(name, restaurant_id):
     return {'name': name, 'menu': menu}
 
 
-def get_amica_menu(name, cost_number):
+def get_amica_menu(name, restaurant_number):
     """Fetches the menu for the current week of Amica restaurants from
     their API."""
     today = date.today()
     first_day = today - timedelta(days=today.weekday())
-    last_day = first_day + timedelta(days=5)
     menu = {}
 
     # pylint: disable=no-member
-    raw_url = 'http://www.amica.fi/modules/json/json/Index?costNumber={0}' \
-              '&firstDay={1}&lastDay={2}&language=fi'. \
-              format(cost_number, first_day.isoformat(), last_day.isoformat())
-    resp = requests.get(raw_url)
+    url = 'http://www.amica.fi/api/restaurant/menu/week?language=en' \
+          '&restaurantPageId={0}&weekDate={1}'.format(restaurant_number,
+                                                      first_day)
+    resp = requests.get(url)
     if not resp.ok:
         return {}
 
     full_menu = resp.json()
-    for i in range(len(full_menu['MenusForDays'])):
-        day_menu = full_menu['MenusForDays'][i]
+    for i in range(len(full_menu['LunchMenus'])):
+        day_menu = full_menu['LunchMenus'][i]
         if len(day_menu['SetMenus']) > 0:
-            menu_date = day_menu['Date'].split('T')[0]
+            menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
             menu[menu_date] = []
 
-            for j in range(len(day_menu['SetMenus'])):
-                # Ensure there is at least one menu for the day
-                if len(day_menu['SetMenus'][j]['Components']) > 0:
+            # Ensure there is at least one menu for the day
+            if len(day_menu['SetMenus']) > 0:
+                for j in range(len(day_menu['SetMenus'])):
+                    meals = day_menu['SetMenus'][j]
                     # List wrap to prevent flattening of strings
-                    menu[menu_date].append([day_menu['SetMenus'][j]['Name']])
-                    menu[menu_date].append(day_menu['SetMenus'][j]['Components'])
+                    if meals['Name']:
+                        menu[menu_date].append([meals['Name']])
+                    for meal in meals['Meals']:
+                        menu[menu_date].append([meal['Name']])
 
             if len(menu[menu_date]) > 0:
                 # Flatten nested lists
@@ -210,7 +212,7 @@ def get_menus(restaurants):
 
     for res in restaurants:
         if res['type'] == 'amica':
-            menu = get_amica_menu(res['name'], res['costNumber'])
+            menu = get_amica_menu(res['name'], res['restaurantNumber'])
         elif res['type'] == 'antell':
             menu = parse_antell_menu(res['name'], res['id'])
         elif res['type'] == 'sodexo':

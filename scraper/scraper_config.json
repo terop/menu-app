@@ -4,12 +4,17 @@
         {
             "type": "amica",
             "name": "Amica TUAS",
-            "costNumber": "0199"
+            "restaurantNumber": "9291"
         },
         {
             "type": "amica",
             "name": "Amica Laurea",
-            "costNumber": "3292"
+            "restaurantNumber": "5268"
+        },
+        {
+            "type": "amica",
+            "name": "Amica Alvari",
+            "restaurantNumber": "9271"
         },
         {
             "type": "antell",
