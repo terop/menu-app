@@ -57,16 +57,31 @@ def get_amica_menu(name, restaurant_number):
     today = date.today()
     first_day = today - timedelta(days=today.weekday())
     menu = {}
+    language = 'en'
 
     # pylint: disable=no-member
-    url = 'http://www.amica.fi/api/restaurant/menu/week?language=en' \
-          '&restaurantPageId={0}&weekDate={1}'.format(restaurant_number,
+    url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
+          '&restaurantPageId={1}&weekDate={2}'.format(language,
+                                                      restaurant_number,
                                                       first_day)
     resp = requests.get(url)
     if not resp.ok:
         return {}
 
     full_menu = resp.json()
+    if len(full_menu['LunchMenus']) == 0:
+        # Try to get the Finnish menu because not all Amica restaurants have
+        # menus in English
+        language = 'fi'
+        url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
+              '&restaurantPageId={1}&weekDate={2}'.format(language,
+                                                          restaurant_number,
+                                                          first_day)
+        resp = requests.get(url)
+        if not resp.ok:
+            return {}
+        full_menu = resp.json()
+
     for i in range(len(full_menu['LunchMenus'])):
         day_menu = full_menu['LunchMenus'][i]
         if len(day_menu['SetMenus']) > 0:
