@@ -52,12 +52,7 @@
             {% if week %}
                 {% for day, menus in menu.items() %}
                     <h4>{{ day }}</h4>
-                    {% if (menus|length % 3) == 0 %}
-                        {% set slices = menus|length // 3 %}
-                    {% else %}
-                        {% set slices = (menus|length // 3) + 1 %}
-                    {% endif %}
-                    {% for menu_row in menus|slice(slices) %}
+                    {% for menu_row in menus %}
                         <div class="row">
                             {% for menu in menu_row %}
                                 <div class="col-md-4">
@@ -73,12 +68,7 @@
                     {% endfor %}
                 {% endfor %}
             {% else %}
-                {% if (menu|length % 3) == 0 %}
-                    {% set slices = menu|length // 3 %}
-                {% else %}
-                    {% set slices = (menu|length // 3) + 1 %}
-                {% endif %}
-                {% for rest_row in menu|slice(slices) %}
+                {% for rest_row in menu %}
                     <div class="row">
                         {% for rest in rest_row %}
                             <div class="col-md-4">

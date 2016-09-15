@@ -53,6 +53,11 @@ def add():
 
 def format_menu(menus, show_week=False):
     """Format menu data for easier display."""
+    def chunks(l, n):
+        """Yield successive n-sized chunks from l."""
+        for i in range(0, len(l), n):
+            yield l[i:i + n]
+
     if show_week:
         week_menu = {}
         for menu in menus[0]:
@@ -65,7 +70,7 @@ def format_menu(menus, show_week=False):
         week_menu_format = {}
         for key in week_menu.keys():
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
-            week_menu_format[new_date] = week_menu[key]
+            week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
         week_menu_ordered = OrderedDict(sorted(week_menu_format.items()))
         return week_menu_ordered
@@ -75,7 +80,7 @@ def format_menu(menus, show_week=False):
         for menu in menus[0]:
             if today in list(menu['menu'].keys()):
                 menu_data.append([menu['name'], menu['menu'][today]])
-        return menu_data
+        return list(chunks(menu_data, 3))
 
 
 if __name__ == '__main__':
