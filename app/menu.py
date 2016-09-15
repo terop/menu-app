@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Module for running Flask in the menu application."""
 
+# pylint: disable=c0103
 import logging
 from collections import OrderedDict
 from datetime import date, datetime
@@ -68,7 +69,7 @@ def format_menu(menus, show_week=False):
                                        'menu': menu['menu'][day]})
         # Reformat dates
         week_menu_format = {}
-        for key in week_menu.keys():
+        for key in week_menu:
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
