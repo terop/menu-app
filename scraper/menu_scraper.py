@@ -179,10 +179,10 @@ def parse_taffa_menu(name, url):
             if day_date in days:
                 day_menu = []
                 for item in child.next_sibling.next_sibling.children:
-                    if len(item.string) > 3:
+                    if item and item.string and len(item.string) > 3:
                         # Skip newlines
                         day_menu.append(item.string)
-                if len(day_menu) > 2:
+                if len(day_menu) > 1:
                     # Need to have enough courses to ensure that the
                     # restaurant is open
                     menus[day_date.isoformat()] = day_menu
