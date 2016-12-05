@@ -203,6 +203,8 @@ def parse_metropol_menu(name, url):
 
     soup = BeautifulSoup(resp.content, 'lxml')
     for day_id in DAY_IDS:
+        if not soup.find(id=day_id):
+            continue
         day_date = soup.find(id=day_id).find('p').find('strong').text.split(' ')[1]
         menu_list = soup.find(id=day_id).find_all('li')
         day_menu = []
