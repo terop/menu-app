@@ -4,7 +4,6 @@ restaurant menus. Menus are sent to a backend service for storage and
 display."""
 
 import argparse
-import itertools
 import json
 import re
 from datetime import date, datetime, timedelta
@@ -54,54 +53,56 @@ def parse_antell_menu(name, restaurant_id):
 def get_amica_menu(name, restaurant_number):
     """Fetches the menu for the current week of Amica restaurants from
     their API."""
-    today = date.today()
-    first_day = today - timedelta(days=today.weekday())
+    monday = date.today()
     menu = {}
-    language = 'en'
 
-    # pylint: disable=no-member
-    url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
-          '&restaurantPageId={1}&weekDate={2}'.format(language,
+    if monday.weekday() != 0:
+        monday -= timedelta(days=monday.weekday())
+    days = [monday + timedelta(days=i) for i in range(0, 5)]
+
+    for day_date in days:
+        language = 'en'
+        day_str = day_date.strftime('%Y-%m-%d')
+
+        # pylint: disable=no-member
+        url = 'http://www.amica.fi/api/restaurant/menu/day?language={0}' \
+              '&restaurantPageId={1}&date={2}'.format(language,
                                                       restaurant_number,
-                                                      first_day)
-    resp = requests.get(url)
-    if not resp.ok:
-        return {}
+                                                      day_str)
+        resp = requests.get(url)
+        if not resp.ok:
+            return {}
 
-    full_menu = resp.json()
-    if len(full_menu['LunchMenus']) == 0:
-        # Try to get the Finnish menu because not all Amica restaurants have
-        # menus in English
-        language = 'fi'
-        url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
-              '&restaurantPageId={1}&weekDate={2}'.format(language,
+        full_menu = resp.json()
+        if not full_menu['LunchMenu']:
+            # Try to get the Finnish menu because not all Amica restaurants have
+            # menus in English
+            language = 'fi'
+            url = 'http://www.amica.fi/api/restaurant/menu/day?language={0}' \
+                  '&restaurantPageId={1}&date={2}'.format(language,
                                                           restaurant_number,
-                                                          first_day)
+                                                          day_str)
         resp = requests.get(url)
         if not resp.ok:
             return {}
         full_menu = resp.json()
 
-    for i in range(len(full_menu['LunchMenus'])):
-        day_menu = full_menu['LunchMenus'][i]
+        day_menu = full_menu['LunchMenu']
+        if not day_menu:
+            continue
+        menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
         if len(day_menu['SetMenus']) > 0:
-            menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
             menu[menu_date] = []
 
             # Ensure there is at least one menu for the day
             if len(day_menu['SetMenus']) > 0:
-                for j in range(len(day_menu['SetMenus'])):
-                    meals = day_menu['SetMenus'][j]
-                    # List wrap to prevent flattening of strings
-                    if meals['Name']:
-                        menu[menu_date].append([meals['Name']])
-                    for meal in meals['Meals']:
-                        menu[menu_date].append([meal['Name']])
+                for i in range(len(day_menu['SetMenus'])):
+                    menu[menu_date].append(day_menu['SetMenus'][i]['Name'])
+                    meals = day_menu['SetMenus'][i]['Meals']
+                    for _, meal in enumerate(meals):
+                        menu[menu_date].append(meal['Name'])
 
-            if len(menu[menu_date]) > 0:
-                # Flatten nested lists
-                menu[menu_date] = list(itertools.chain(*menu[menu_date]))
-            else:
+            if len(menu[menu_date]) == 0:
                 # Delete empty menu
                 del menu[menu_date]
 
@@ -194,7 +195,7 @@ def parse_metropol_menu(name, url):
     """Parses the menu for the current week for the Metropol lunch restaurant
     in Innopoli 2 from the restaurant's web page."""
     pattern = re.compile(r'([\w\s:;,-]+) \d+,\d+.+')
-    DAY_IDS = ['day-ma', 'day-ti', 'day-ke', 'day-to', 'day-pe']
+    day_ids = ['day-ma', 'day-ti', 'day-ke', 'day-to', 'day-pe']
     menu = {}
 
     resp = requests.get(url)
@@ -202,7 +203,7 @@ def parse_metropol_menu(name, url):
         return {}
 
     soup = BeautifulSoup(resp.content, 'lxml')
-    for day_id in DAY_IDS:
+    for day_id in day_ids:
         if not soup.find(id=day_id):
             continue
         day_date = soup.find(id=day_id).find('p').find('strong').text.split(' ')[1]
