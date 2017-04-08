@@ -222,6 +222,42 @@ def parse_metropol_menu(name, url):
     return {'name': name, 'menu': menu}
 
 
+def parse_iss_menu(name, url):
+    """Parses the menu for the current week for a ISS lunch restaurant
+    from the restaurant's web page."""
+    pattern = re.compile(r'\w+ (\d+\.\d+)')
+    menu = {}
+    day_menu = []
+    current_date = None
+
+    resp = requests.get(url)
+    if not resp.ok:
+        return {}
+
+    soup = BeautifulSoup(resp.content, 'lxml')
+    if len(soup.find_all('table')) < 1:
+        return {}
+
+    menu_items = soup.find_all('table')[0].find_all('td')
+    if len(menu_items) == 0:
+        return {}
+    for item in menu_items:
+        match = re.match(pattern, item.text)
+        if match:
+            # Day heading
+            current_date = datetime.strptime('{}.{}'.format(match.group(1),
+                                                            datetime.now().strftime('%Y')),
+                                             '%d.%m.%Y').date().isoformat()
+        else:
+            if len(item.text) > 5:
+                day_menu.append(item.text)
+            if len(item.text) == 0:
+                menu[current_date] = day_menu
+                day_menu = []
+
+    return {'name': name, 'menu': menu}
+
+
 def get_menus(restaurants):
     """Returns menus of all restaurants given in the configuration.
     Restaurant types are: amica, antell, sodexo."""
@@ -239,6 +275,8 @@ def get_menus(restaurants):
             menu = parse_taffa_menu(res['name'], res['url'])
         elif res['type'] == 'metropol':
             menu = parse_metropol_menu(res['name'], res['url'])
+        elif res['type'] == 'iss':
+            menu = parse_iss_menu(res['name'], res['url'])
 
         if len(menu) >= 1 and len(menu['menu']) >= 1:
             # Ignore empty menus denoting an error
