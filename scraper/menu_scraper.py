@@ -50,7 +50,7 @@ def parse_antell_menu(name, restaurant_id):
     return {'name': name, 'menu': menu}
 
 
-def get_amica_menu(name, restaurant_number):
+def get_amica_menu(name, restaurant_number, language='en'):
     """Fetches the menu for the current week of Amica restaurants from
     their API."""
     monday = date.today()
@@ -61,7 +61,6 @@ def get_amica_menu(name, restaurant_number):
     days = [monday + timedelta(days=i) for i in range(0, 5)]
 
     for day_date in days:
-        language = 'en'
         day_str = day_date.strftime('%Y-%m-%d')
 
         # pylint: disable=no-member
@@ -75,11 +74,9 @@ def get_amica_menu(name, restaurant_number):
 
         full_menu = resp.json()
         if not full_menu['LunchMenu']:
-            # Try to get the Finnish menu because not all Amica restaurants have
-            # menus in English
-            language = 'fi'
+            alternate_language = 'fi' if language == 'en' else 'en'
             url = 'http://www.amica.fi/api/restaurant/menu/day?language={0}' \
-                  '&restaurantPageId={1}&date={2}'.format(language,
+                  '&restaurantPageId={1}&date={2}'.format(alternate_language,
                                                           restaurant_number,
                                                           day_str)
         resp = requests.get(url)
@@ -266,7 +263,11 @@ def get_menus(restaurants):
 
     for res in restaurants:
         if res['type'] == 'amica':
-            menu = get_amica_menu(res['name'], res['restaurantNumber'])
+            if 'language' in res:
+                menu = get_amica_menu(res['name'], res['restaurantNumber'],
+                                      language=res['language'])
+            else:
+                menu = get_amica_menu(res['name'], res['restaurantNumber'])
         elif res['type'] == 'antell':
             menu = parse_antell_menu(res['name'], res['id'])
         elif res['type'] == 'sodexo':
@@ -292,7 +293,8 @@ def main():
 
     args = parser.parse_args()
 
-    config = json.load(open(args.config, 'r'))
+    with open(args.config, 'r') as conf_file:
+        config = json.load(conf_file)
     all_menus = get_menus(config['restaurants'])
 
     resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
