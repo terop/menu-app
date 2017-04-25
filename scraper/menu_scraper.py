@@ -222,7 +222,8 @@ def parse_metropol_menu(name, url):
 def parse_iss_menu(name, url):
     """Parses the menu for the current week for a ISS lunch restaurant
     from the restaurant's web page."""
-    pattern = re.compile(r'\w+ (\d+\.\d+)')
+    day_names = ['Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai']
+    pattern = re.compile(r'(\d+\.\d+)\.?')
     menu = {}
     day_menu = []
     current_date = None
@@ -235,21 +236,22 @@ def parse_iss_menu(name, url):
     if len(soup.find_all('table')) < 1:
         return {}
 
-    menu_items = soup.find_all('table')[0].find_all('td')
-    if len(menu_items) == 0:
-        return {}
-    for item in menu_items:
-        match = re.match(pattern, item.text)
-        if match:
-            # Day heading
+    rows = soup.find_all('table')[0].find_all('tr')
+    for idx, row in enumerate(rows):
+        el = row.find_all('td')
+        if el[0].text in day_names and re.match(pattern, el[1].text):
+            match = re.match(pattern, el[1].text)
             current_date = datetime.strptime('{}.{}'.format(match.group(1),
                                                             datetime.now().strftime('%Y')),
                                              '%d.%m.%Y').date().isoformat()
         else:
-            if len(item.text) > 5:
-                day_menu.append(item.text)
-            if len(item.text) == 0:
-                menu[current_date] = day_menu
+            if len(el[1].text) > 5:
+                day_menu.append('{}: {}'.format(el[0].text, el[1].text))
+            if (len(el[0].text) == 1 and el[0].text.isspace()) or \
+               (len(el[1].text) == 1 and el[1].text.isspace()) or \
+               idx == (len(rows) - 1):
+                if len(day_menu) > 2:
+                    menu[current_date] = day_menu
                 day_menu = []
 
     return {'name': name, 'menu': menu}
