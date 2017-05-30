@@ -236,20 +236,20 @@ def parse_iss_menu(name, url):
     if len(soup.find_all('table')) < 1:
         return {}
 
-    rows = soup.find_all('table')[0].find_all('tr')
+    rows = menu_table = soup.find_all('table')[0].find_all('table')[0].find_all('tr')
     for idx, row in enumerate(rows):
-        el = row.find_all('td')
-        if el[0].text in day_names and re.match(pattern, el[1].text):
-            match = re.match(pattern, el[1].text)
+        text = row.find_all('td')[0].text
+        split_text = text.split(' ')
+        if len(split_text) == 2 and split_text[0] in day_names \
+           and re.match(pattern, split_text[1]):
+            match = re.match(pattern, split_text[1])
             current_date = datetime.strptime('{}.{}'.format(match.group(1),
                                                             datetime.now().strftime('%Y')),
                                              '%d.%m.%Y').date().isoformat()
         else:
-            if len(el[1].text) > 5:
-                day_menu.append('{}: {}'.format(el[0].text, el[1].text))
-            if (len(el[0].text) == 1 and el[0].text.isspace()) or \
-               (len(el[1].text) == 1 and el[1].text.isspace()) or \
-               idx == (len(rows) - 1):
+            if len(text) > 5:
+                day_menu.append(text)
+            if len(text) == 0 or idx == (len(rows) - 1):
                 if len(day_menu) > 2:
                     menu[current_date] = day_menu
                 day_menu = []
