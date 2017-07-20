@@ -128,7 +128,8 @@ def get_sodexo_menu(name, restaurant_id):
         json_menu = resp.json()
         if len(json_menu['courses']) > 2:
             # No menu for today, the restaurant is probably closed
-            courses = [course['title_fi'] for course in json_menu['courses']]
+            courses = ['{}: {} {}'.format(course['category'], course['title_fi'],
+                                          course['price']) for course in json_menu['courses']]
             menus[day.isoformat()] = courses
 
     return {'name': name, 'menu': menus}
