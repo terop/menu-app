@@ -58,50 +58,37 @@ def get_amica_menu(name, restaurant_number, language='en'):
 
     if monday.weekday() != 0:
         monday -= timedelta(days=monday.weekday())
-    days = [monday + timedelta(days=i) for i in range(0, 5)]
+    day_str = monday.strftime('%Y-%m-%d')
 
-    for day_date in days:
-        day_str = day_date.strftime('%Y-%m-%d')
-
-        # pylint: disable=no-member
-        url = 'http://www.amica.fi/api/restaurant/menu/day?language={0}' \
-              '&restaurantPageId={1}&date={2}'.format(language,
+    # pylint: disable=no-member
+    url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
+          '&restaurantPageId={1}&weekDate={2}'.format(language,
                                                       restaurant_number,
                                                       day_str)
-        resp = requests.get(url)
-        if not resp.ok:
-            return {}
+    resp = requests.get(url)
+    if not resp.ok:
+        return {}
 
-        full_menu = resp.json()
-        if not full_menu['LunchMenu']:
-            alternate_language = 'fi' if language == 'en' else 'en'
-            url = 'http://www.amica.fi/api/restaurant/menu/day?language={0}' \
-                  '&restaurantPageId={1}&date={2}'.format(alternate_language,
-                                                          restaurant_number,
-                                                          day_str)
-        resp = requests.get(url)
-        if not resp.ok:
-            return {}
-        full_menu = resp.json()
+    full_menu = resp.json()
+    if not full_menu['LunchMenus']:
+        return {}
 
-        day_menu = full_menu['LunchMenu']
-        if not day_menu:
-            continue
+    for day_menu in full_menu['LunchMenus'][0:5]:
         menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
         if len(day_menu['SetMenus']) > 0:
             menu[menu_date] = []
 
-            # Ensure there is at least one menu for the day
-            if len(day_menu['SetMenus']) > 0:
-                for i in range(len(day_menu['SetMenus'])):
-                    menu[menu_date].append(day_menu['SetMenus'][i]['Name'])
-                    meals = day_menu['SetMenus'][i]['Meals']
-                    for _, meal in enumerate(meals):
-                        menu[menu_date].append(meal['Name'])
+        # Ensure there is at least one menu for the day
+        if len(day_menu['SetMenus']) > 0:
+            for i in range(len(day_menu['SetMenus'])):
+                menu[menu_date].append(day_menu['SetMenus'][i]['Name'])
+                meals = day_menu['SetMenus'][i]['Meals']
+                for _, meal in enumerate(meals):
+                    menu[menu_date].append(meal['Name'])
 
-            if len(menu[menu_date]) == 0:
-                # Delete empty menu
-                del menu[menu_date]
+        if len(menu[menu_date]) == 0:
+            # Delete empty menu
+            del menu[menu_date]
 
     return {'name': name, 'menu': menu}
 
