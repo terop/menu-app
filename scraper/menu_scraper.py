@@ -75,18 +75,18 @@ def get_amica_menu(name, restaurant_number, language='en'):
 
     for day_menu in full_menu['LunchMenus'][0:5]:
         menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
-        if len(day_menu['SetMenus']) > 0:
+        if day_menu['SetMenus']:
             menu[menu_date] = []
 
         # Ensure there is at least one menu for the day
-        if len(day_menu['SetMenus']) > 0:
+        if day_menu['SetMenus']:
             for i in range(len(day_menu['SetMenus'])):
                 menu[menu_date].append(day_menu['SetMenus'][i]['Name'])
                 meals = day_menu['SetMenus'][i]['Meals']
                 for _, meal in enumerate(meals):
                     menu[menu_date].append(meal['Name'])
 
-        if len(menu[menu_date]) == 0:
+        if not menu[menu_date]:
             # Delete empty menu
             del menu[menu_date]
 
@@ -286,9 +286,13 @@ def main():
 
     args = parser.parse_args()
 
-    with open(args.config, 'r') as conf_file:
-        config = json.load(conf_file)
-    all_menus = get_menus(config['restaurants'])
+    try:
+        with open(args.config, 'r') as conf_file:
+            config = json.load(conf_file)
+        all_menus = get_menus(config['restaurants'])
+    except FileNotFoundError:
+        print('Could not find configuration file: {}'.format(args.config))
+        exit(1)
 
     resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
     timestamp = datetime.now().isoformat()
@@ -297,9 +301,9 @@ def main():
     else:
         status = resp.json()
         if status['status'] == 'success':
-            print('{0}: Menu extraction succeeded'.format(timestamp))
+            print('{}: Menu extraction succeeded'.format(timestamp))
         else:
-            print('{0}: Menu extraction failed, error: {1}'.
+            print('{}: Menu extraction failed, error: {}'.
                   format(timestamp, status['cause']))
 
 
