@@ -86,9 +86,13 @@ def get_amica_menu(name, restaurant_number, language='en'):
                 for _, meal in enumerate(meals):
                     menu[menu_date].append(meal['Name'])
 
-        if not menu[menu_date]:
-            # Delete empty menu
-            del menu[menu_date]
+        try:
+            if not menu[menu_date]:
+                # Delete empty menu
+                del menu[menu_date]
+        except KeyError:
+            # Date is not found so the error can be ignored
+            pass
 
     return {'name': name, 'menu': menu}
 
