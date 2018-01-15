@@ -86,6 +86,7 @@ def get_amica_menu(name, restaurant_number, language='en'):
                 for _, meal in enumerate(meals):
                     menu[menu_date].append(meal['Name'])
 
+                menu[menu_date].append(day_menu['SetMenus'][i]['Price'])
         try:
             if not menu[menu_date]:
                 # Delete empty menu
@@ -118,9 +119,14 @@ def get_sodexo_menu(name, restaurant_id):
 
         json_menu = resp.json()
         if len(json_menu['courses']) > 2:
-            # No menu for today, the restaurant is probably closed
-            courses = ['{}: {} {}'.format(course['category'], course['title_fi'],
-                                          course['price']) for course in json_menu['courses']]
+            courses = []
+            for course in json_menu['courses']:
+                if 'category' in course:
+                    courses.append('{}: {} {} €'.format(course['category'], course['title_fi'],
+                                                        course['price']))
+                else:
+                    courses.append('{} {} €'.format(course['title_fi'], course['price']))
+
             menus[day.isoformat()] = courses
 
     return {'name': name, 'menu': menus}
