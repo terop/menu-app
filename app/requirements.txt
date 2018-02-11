@@ -1,3 +1,4 @@
 Flask
-psycopg2
 SQLAlchemy
+# Enable psycopg2 when installing outside Docker
+# psycopg2
