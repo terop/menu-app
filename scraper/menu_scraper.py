@@ -121,11 +121,16 @@ def get_sodexo_menu(name, restaurant_id):
         if len(json_menu['courses']) > 2:
             courses = []
             for course in json_menu['courses']:
+                course_text = ''
                 if 'category' in course:
-                    courses.append('{}: {} {} €'.format(course['category'], course['title_fi'],
-                                                        course['price']))
-                else:
-                    courses.append('{} {} €'.format(course['title_fi'], course['price']))
+                    course_text += '{}: '.format(course['category'])
+
+                course_text += course['title_fi']
+
+                if 'price' in course:
+                    course_text += ' {} €'.format(course['price'])
+
+                courses.append(course_text)
 
             menus[day.isoformat()] = courses
 
