@@ -86,7 +86,8 @@ def get_amica_menu(name, restaurant_number, language='en'):
                 for _, meal in enumerate(meals):
                     menu[menu_date].append(meal['Name'])
 
-                menu[menu_date].append(day_menu['SetMenus'][i]['Price'])
+                if day_menu['SetMenus'][i]['Price']:
+                    menu[menu_date].append(day_menu['SetMenus'][i]['Price'])
         try:
             if not menu[menu_date]:
                 # Delete empty menu
@@ -236,7 +237,7 @@ def parse_iss_menu(name, url):
         return {}
 
     soup = BeautifulSoup(resp.content, 'lxml')
-    if len(soup.find_all('table')) < 1:
+    if not soup.find_all('table'):
         return {}
 
     rows = soup.find_all('table')[0].find_all('tr')
@@ -312,13 +313,14 @@ def main():
     resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
     timestamp = datetime.now().isoformat()
     if not resp.ok:
-        print('{0}: Menu extraction failed'.format(timestamp))
+        print('{0}: Menu extraction failed, HTTP status code: {1}'.format(timestamp,
+                                                                          str(resp.status_code)))
     else:
         status = resp.json()
         if status['status'] == 'success':
             print('{}: Menu extraction succeeded'.format(timestamp))
         else:
-            print('{}: Menu extraction failed, error: {}'.
+            print('{}: Menu extraction failed, error: {}. See server log for more details.'.
                   format(timestamp, status['cause']))
 
 
