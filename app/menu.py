@@ -6,14 +6,10 @@ import logging
 from collections import OrderedDict
 from datetime import date, datetime
 from flask import Flask, jsonify, render_template, request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import db
 
 app = Flask(__name__)
 app.config.from_pyfile('menu.cfg')
-engine = create_engine(app.config['DB_CON_STRING'])
-Session = sessionmaker(bind=engine)
 
 
 # Routes
@@ -26,7 +22,7 @@ def index():
             'root': app.config['APPLICATION_ROOT']}
 
     today = date.today().isoformat()
-    menus = db.get_menu(Session(), today)
+    menus = db.get_menu(get_db_creds(), today)
     show_week = 'week' in request.args and request.args['week'] == 'true'
     args['date'] = date.today().strftime('%A %d.%m.%Y')
     args['week'] = show_week
@@ -44,12 +40,12 @@ def add():
     if not request.get_json():
         return jsonify(status='error',
                        cause='invalid json')
-    retval = db.insert_menu(Session(), request.get_json())
+    retval = db.insert_menu(get_db_creds(), request.get_json())
     if retval:
         return jsonify(status='success')
-    else:
-        return jsonify(status='error',
-                       cause='insert error')
+
+    return jsonify(status='error',
+                   cause='database insert error')
 
 
 def format_menu(menus, show_week=False):
@@ -61,7 +57,7 @@ def format_menu(menus, show_week=False):
 
     if show_week:
         week_menu = {}
-        for menu in menus[0]:
+        for menu in menus:
             for day in menu['menu']:
                 if day not in week_menu:
                     week_menu[day] = []
@@ -74,19 +70,28 @@ def format_menu(menus, show_week=False):
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
         week_menu_ordered = OrderedDict(sorted(week_menu_format.items()))
+
         return week_menu_ordered
-    else:
-        menu_data = []
-        today = date.today().isoformat()
-        for menu in menus[0]:
-            if today in list(menu['menu'].keys()):
-                menu_data.append([menu['name'], menu['menu'][today]])
-        return list(chunks(menu_data, 3))
+
+    menu_data = []
+    today = date.today().isoformat()
+    for menu in menus:
+        if today in list(menu['menu'].keys()):
+            menu_data.append([menu['name'], menu['menu'][today]])
+
+    return list(chunks(menu_data, 3))
+
+
+def get_db_creds():
+    """Returns the database credentials as dictionary."""
+    return {'database': app.config['DB_DATABASE'],
+            'user': app.config['DB_USER'],
+            'password': app.config['DB_PASSWORD'],
+            'host': app.config['DB_HOST']}
 
 
 if __name__ == '__main__':
     # Set up logging
-    logging.basicConfig(filename='menu_server.log', level=logging.INFO,
-                        format='%(asctime)s %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
     logging.info('Starting menu server')
     app.run(host='0.0.0.0')

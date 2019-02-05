@@ -1,57 +1,54 @@
 """Module for handling database operations."""
 
 import logging
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Date, Integer
-from sqlalchemy import exc, and_
-from sqlalchemy.dialects import postgresql
 
-Base = declarative_base()
+import psycopg2
+import psycopg2.extras
 
 
-class Menu(Base):
-    """Class for menus."""
-    __tablename__ = 'menus'
-
-    id = Column(Integer, primary_key=True)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
-    menu = Column(postgresql.JSONB, nullable=False)
-
-
-def insert_menu(session, menus):
-    """Inserts a menu into the database. Returns True on success and False
-    on error."""
-    if len(menus) == 0 or 'menu' not in menus[0]:
+def insert_menu(db_creds, menus):
+    """Inserts a menu into the database.
+    Returns True on success and False on error.
+    """
+    if not menus or 'menu' not in menus[0]:
         return False
 
     start_date = min([min(menu['menu'].keys()) for menu in menus])
     end_date = max([max(menu['menu'].keys()) for menu in menus])
 
-    menu = Menu(start_date=start_date, end_date=end_date, menu=menus)
-
     try:
-        session.add(menu)
-        session.commit()
-
-        return True
-    except exc.SQLAlchemyError as err:
-        logging.error('Error: menu insert failed: %s', err)
+        with psycopg2.connect(dbname=db_creds['database'],
+                              user=db_creds['user'],
+                              password=db_creds['password'],
+                              host=db_creds['host']) as conn:
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO menus (start_date, end_date, menu) VALUES (%s, %s, %s)',
+                            (start_date, end_date, psycopg2.extras.Json(menus)))
+    except psycopg2.Error as err:
+        logging.error('Error: menu insert failed: %s', err.pgerror)
         return False
-    finally:
-        session.close()
+
+    return True
 
 
-def get_menu(session, current_date):
-    """Return the first menu for the current date between the start and
-    end dates."""
-
+def get_menu(db_creds, current_date):
+    """Returns the last menu for the current date between the start and
+    end dates. Return value: menu as a Python object on success, None on failure.
+    """
     try:
-        query = session.query(Menu.menu).filter(and_(Menu.start_date <= current_date,
-                                                     Menu.end_date >= current_date))
-        return query.first()
-    except exc.SQLAlchemyError as err:
-        logging.error('Error: menu query failed: %s', err)
+        with psycopg2.connect(dbname=db_creds['database'],
+                              user=db_creds['user'],
+                              password=db_creds['password'],
+                              host=db_creds['host']) as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT menu FROM menus WHERE start_date <= %s AND end_date >= %s '
+                            'ORDER BY id DESC',
+                            (current_date, current_date))
+                rows = cur.fetchall()
+                if not rows:
+                    return []
+
+                return rows[0][0]
+    except psycopg2.Error as err:
+        logging.error('Error: menu query failed: %s', err.pgerror)
         return None
-    finally:
-        session.close()
