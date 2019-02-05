@@ -1,3 +1,2 @@
 Flask
-# Enable psycopg2 when installing outside Docker
-# psycopg2-binary
+psycopg2-binary
