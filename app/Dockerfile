@@ -1,5 +1,5 @@
 FROM frolvlad/alpine-python3
-LABEL maintainer "Tero Paloheimo <tero.paloheimo@iki.fi>"
+LABEL maintainer="tero.paloheimo@iki.fi"
 
 WORKDIR /usr/local/app
 COPY . .
