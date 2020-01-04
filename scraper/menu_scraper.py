@@ -102,38 +102,50 @@ def get_amica_menu(name, restaurant_number, language='en'):
 def get_sodexo_menu(name, restaurant_id):
     """Fetches the current weeks menu for a Sodexo restaurant from its
     JSON formatted menu."""
-    base_url = "http://www.sodexo.fi/ruokalistat/output/daily_json/"
-    monday = date.today()
+
+    def get_weekday_mapping():
+        """Returns a mapping between weekday name and the date matching
+        the weekday."""
+        days = {}
+        monday = date.today()
+
+        if monday.weekday() != 0:
+            monday -= timedelta(days=monday.weekday())
+
+        current_day = monday
+        for _ in range(0, 5):
+            days[current_day.strftime('%A')] = current_day.isoformat()
+            current_day += timedelta(days=1)
+
+        return days
+
+    base_url = "https://www.sodexo.fi/en/ruokalistat/output/weekly_json/"
+    day_mapping = get_weekday_mapping()
     menus = {}
 
-    if monday.weekday() != 0:
-        monday -= timedelta(days=monday.weekday())
+    resp = requests.get(base_url + restaurant_id)
+    if not resp.ok:
+        return {}
 
-    for i in range(0, 5):
-        day = monday + timedelta(days=i)
-        full_url = '{0}{1}/{2}/fi'.format(base_url, restaurant_id,
-                                          day.strftime('%Y/%m/%d'))
+    json_menu = resp.json()
+    for meal_date in json_menu['mealdates']:
+        courses = []
 
-        resp = requests.get(full_url)
-        if not resp.ok:
-            return {}
+        if len(meal_date['courses']) < 2:
+            continue
+        for course in meal_date['courses'].values():
+            course_text = ''
+            if 'category' in course:
+                course_text += '{}: '.format(course['category'])
 
-        json_menu = resp.json()
-        if len(json_menu['courses']) > 2:
-            courses = []
-            for course in json_menu['courses']:
-                course_text = ''
-                if 'category' in course:
-                    course_text += '{}: '.format(course['category'])
+            course_text += course['title_fi']
 
-                course_text += course['title_fi']
+            if 'price' in course:
+                course_text += ' {} €'.format(course['price'])
 
-                if 'price' in course:
-                    course_text += ' {} €'.format(course['price'])
+            courses.append(course_text)
 
-                courses.append(course_text)
-
-            menus[day.isoformat()] = courses
+        menus[day_mapping[meal_date['date']]] = courses
 
     return {'name': name, 'menu': menus}
 
