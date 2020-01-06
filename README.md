@@ -12,5 +12,11 @@ be seen in `menu.cfg_sample`.
 Both applications use Python 3. If you experience strange errors when running either application, please check that you
 are using the correct Python version.
 
+### Docker
+The backend can be run with Docker. To build the image run the `make build` command in the `app` directory.
+The image will be called `menu-app`.
+
+The image is run with `docker run -d --restart always -p <target port>:5000 --name <container name> menu-app:latest`, replace `<targe port>` with the port to be exposed and `<container name>` with the desired name.
+
 ## License
-Release under the MIT license. See LICENSE for the full license.
+Released under the MIT license. See LICENSE for the full license.
