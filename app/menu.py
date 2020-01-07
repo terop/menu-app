@@ -69,9 +69,16 @@ def format_menu(menus, show_week=False):
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
-        week_menu_ordered = OrderedDict(sorted(week_menu_format.items()))
 
-        return week_menu_ordered
+        week_menu_ordered = OrderedDict(sorted(week_menu_format.items()))
+        week_menu_days = OrderedDict()
+        # Add weekday before the day's date
+        for key in week_menu_ordered:
+            week_menu_days['{} {}'.format(
+                datetime.strptime(key, '%d.%m.%Y').strftime('%A'),
+                key)] = week_menu_ordered[key]
+
+        return week_menu_days
 
     menu_data = []
     today = date.today().isoformat()
