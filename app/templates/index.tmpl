@@ -43,13 +43,14 @@
         </nav>
 
         <h3>{% if week %}Week menu{% else %}Day menu{% endif %}</h3>
-        <p>Today is {{ date }}.</p>
+        <p style="font-size: 1.2em;">Today is {{ date }}.</p>
         {% if not menu %}
             <div class="alert alert-danger" role="alert">
                 There are no menus to show for today.
             </div>
         {% else %}
             {% if week %}
+                <br>
                 {% for day, menus in menu.items() %}
                     <h4>{{ day }}</h4>
                     {% for menu_row in menus %}
