@@ -141,7 +141,7 @@ def get_sodexo_menu(name, restaurant_id):
             course_text += course['title_fi']
 
             if 'price' in course:
-                course_text += ' {} €'.format(course['price'])
+                course_text += ' {}'.format(course['price'])
 
             courses.append(course_text)
 
