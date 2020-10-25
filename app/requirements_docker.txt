@@ -1,2 +1,0 @@
-# This requirements file is only used when building an Docker image for menu-app
-Flask
