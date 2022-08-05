@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Module for running Flask in the menu application."""
 
-# pylint: disable=c0103
 import logging
 from collections import OrderedDict
 from datetime import date, datetime
-from flask import Flask, jsonify, render_template, request
-import db
+
+from flask import Flask, jsonify, render_template, request  # pylint: disable=import-error
+
+import db  # pylint: disable=import-error
 
 app = Flask(__name__)
 app.config.from_pyfile('menu.cfg')
@@ -22,7 +23,7 @@ def index():
             'root': app.config['APPLICATION_ROOT']}
 
     today = date.today().isoformat()
-    menus = db.get_menu(get_db_creds(), today)
+    menus = db.get_menu(app.config, today)
     show_week = 'week' in request.args and request.args['week'] == 'true'
     args['date'] = date.today().strftime('%A %d.%m.%Y')
     args['week'] = show_week
@@ -40,7 +41,7 @@ def add():
     if not request.get_json():
         return jsonify(status='error',
                        cause='invalid json')
-    retval = db.insert_menu(get_db_creds(), request.get_json())
+    retval = db.insert_menu(app.config, request.get_json())
     if retval:
         return jsonify(status='success')
 
@@ -50,10 +51,10 @@ def add():
 
 def format_menu(menus, show_week=False):
     """Format menu data for easier display."""
-    def chunks(l, n):
-        """Yield successive n-sized chunks from l."""
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
+    def chunks(list_, size):
+        """Yield successive size-sized chunks from list_."""
+        for i in range(0, len(list_), size):
+            yield list_[i:i + size]
 
     if show_week:
         week_menu = {}
@@ -65,7 +66,8 @@ def format_menu(menus, show_week=False):
                                        'menu': menu['menu'][day]})
         # Reformat dates
         week_menu_format = {}
-        for key in week_menu:
+        # pylint: disable=consider-using-dict-items,consider-iterating-dictionary
+        for key in week_menu.keys():
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
@@ -74,9 +76,8 @@ def format_menu(menus, show_week=False):
         week_menu_days = OrderedDict()
         # Add weekday before the day's date
         for key in week_menu_ordered:
-            week_menu_days['{} {}'.format(
-                datetime.strptime(key, '%d.%m.%Y').strftime('%A'),
-                key)] = week_menu_ordered[key]
+            day_str = datetime.strptime(key, '%d.%m.%Y').strftime('%A')
+            week_menu_days[f'{day_str} {key}'] = week_menu_ordered[key]
 
         return week_menu_days
 
@@ -89,16 +90,9 @@ def format_menu(menus, show_week=False):
     return list(chunks(menu_data, 3))
 
 
-def get_db_creds():
-    """Returns the database credentials as dictionary."""
-    return {'database': app.config['DB_DATABASE'],
-            'user': app.config['DB_USER'],
-            'password': app.config['DB_PASSWORD'],
-            'host': app.config['DB_HOST']}
-
-
 if __name__ == '__main__':
-    # Set up logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s:%(levelname)s:%(message)s')
+
     logging.info('Starting menu server')
     app.run(host='0.0.0.0')

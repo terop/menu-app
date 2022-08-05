@@ -1,8 +1,10 @@
 DEBUG = False
+
 APPLICATION_ROOT = '/menu'
 MENU_PAGE_TITLE = 'Foobar menu'
+
 # Database settings
-DB_DATABASE = 'menu_app'
+DB_NAME = 'menu_app'
 DB_USER = 'user1'
 DB_PASSWORD = 'badpassword'
 DB_HOST = 'localhost'
