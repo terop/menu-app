@@ -151,10 +151,10 @@ def main():
         logging.error('Could not find configuration file: %s', config_file)
         sys.exit(1)
 
-    resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
+    resp = requests.post(f'{config["backendUrl"]}/add', json=all_menus, timeout=5)
     if not resp.ok:
         logging.error('Menu extraction failed, HTTP status code: %s',
-                      {str(resp.status_code)})
+                      str(resp.status_code))
     else:
         status = resp.json()
         if status['status'] == 'success':

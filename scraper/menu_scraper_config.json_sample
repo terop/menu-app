@@ -1,5 +1,5 @@
 {
-    "backendUrl": "http://localhost:5000/add",
+    "backendUrl": "http://localhost:5000",
     "restaurants": [
         {
             "type": "sodexo",
