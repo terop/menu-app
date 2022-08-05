@@ -2,44 +2,9 @@
     "backendUrl": "http://localhost:5000/add",
     "restaurants": [
         {
-            "type": "amica",
-            "name": "Amica TUAS",
-            "restaurantNumber": "9291"
-        },
-        {
-            "type": "amica",
-            "name": "Amica Laurea",
-            "restaurantNumber": "5628"
-        },
-        {
-            "type": "amica",
-            "name": "Amica Alvari",
-            "restaurantNumber": "9271"
-        },
-        {
-            "type": "antell",
-            "name": "Antell Maari",
-            "id": "149"
-        },
-        {
-            "type": "antell",
-            "name": "Antell Spektri",
-            "id": "90"
-        },
-        {
             "type": "sodexo",
             "name": "Sodexo Tietotekniikantalo",
             "id": "142"
-        },
-        {
-            "type": "taffa",
-            "name": "Täffä",
-            "url": "https://www.teknologforeningen.fi"
-        },
-        {
-            "type": "metropol",
-            "name": "Metropol",
-            "url": "http://metropol.fi/otaniemi/lounas"
         }
     ]
 }

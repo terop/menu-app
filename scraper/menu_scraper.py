@@ -1,70 +1,25 @@
 #!/usr/bin/env python3
-"""A module for accessing and scraping Amica and Katri Antell lunch
-restaurant menus. Menus are sent to a backend service for storage and
-display."""
+"""A module for accessing and scraping various lunch restaurant menus.
+Menus are sent to a backend service for storage and display."""
 
 import argparse
 import json
-import re
+import logging
+import sys
 from datetime import date, datetime, timedelta
+
 import requests
-from bs4 import BeautifulSoup
 
 
-def parse_antell_menu(name, restaurant_id):
-    """Extracts the menu for the current week from a Katri Antell menu page."""
-    menu_url = 'http://www.antell.fi/lounaslistat/lounaslista.html?owner={0}'. \
-               format(restaurant_id)
-    resp = requests.get(menu_url)
-    # Check for a failed request or a redirect
-    if not resp.ok or restaurant_id not in resp.url:
-        return {}
-
-    today = date.today()
-    first_day = today - timedelta(days=today.weekday())
-    last_day = first_day + timedelta(days=5)
-    menu = {}
-    menu_days = []
-    i = 0
-
-    while i < (last_day - first_day).days:
-        # pylint: disable=no-member
-        menu_days.append((first_day + timedelta(days=i)).isoformat())
-        i += 1
-
-    soup = BeautifulSoup(resp.text, 'lxml')
-    days = soup.find_all(id='lunch-content-table')[0].find_all('table')
-
-    def content_filter(tag):
-        """Filters away empty and too short tags."""
-        return tag.name == 'td' and len(tag.text) > 6
-
-    for i in range(5):
-        rows = days[i].find_all(content_filter)
-        if len(rows) > 3:
-            day = menu_days[i]
-            courses = [rows[j].text.split('\r')[0].strip() for j
-                       in range(1, len(rows))]
-            menu[day] = courses
-
-    return {'name': name, 'menu': menu}
-
-
-def get_amica_menu(name, restaurant_number, language='en'):
-    """Fetches the menu for the current week of Amica restaurants from
+def get_foodco_menu(name, restaurant_number, language='en'):
+    """Fetches the menu for the current week of Food & Co restaurants from
     their API."""
-    monday = date.today()
+    # NOTE! Currently untested, does not work
     menu = {}
-
-    if monday.weekday() != 0:
-        monday -= timedelta(days=monday.weekday())
-    day_str = monday.strftime('%Y-%m-%d')
 
     # pylint: disable=no-member
-    url = 'http://www.amica.fi/api/restaurant/menu/week?language={0}' \
-          '&restaurantPageId={1}&weekDate={2}'.format(language,
-                                                      restaurant_number,
-                                                      day_str)
+    url = 'https://www.foodandco.fi/modules/json/json/Index?costNumber=' \
+        f'{restaurant_number}&language={language}'
     resp = requests.get(url)
     if not resp.ok:
         return {}
@@ -123,7 +78,7 @@ def get_sodexo_menu(name, restaurant_id):
     day_mapping = get_weekday_mapping()
     menus = {}
 
-    resp = requests.get(base_url + restaurant_id)
+    resp = requests.get(f'{base_url}{restaurant_id}')
     if not resp.ok:
         return {}
 
@@ -136,144 +91,18 @@ def get_sodexo_menu(name, restaurant_id):
         for course in meal_date['courses'].values():
             course_text = ''
             if 'category' in course:
-                course_text += '{}: '.format(course['category'])
+                course_text += f'{course["category"]}: '
 
             course_text += course['title_fi']
 
             if 'price' in course:
-                course_text += ' {}'.format(course['price'])
+                course_text += f' {course["price"]}'
 
             courses.append(course_text)
 
         menus[day_mapping[meal_date['date']]] = courses
 
     return {'name': name, 'menu': menus}
-
-
-def parse_taffa_menu(name, url):
-    """Extracts the menu of Täffä from their web site. Due to the
-    'non-continuous' menu structure each day must be checked to ensure
-    that they belong to the same week."""
-    monday = date.today()
-    menus = {}
-
-    if monday.weekday() != 0:
-        monday -= timedelta(days=monday.weekday())
-    days = [monday + timedelta(days=i) for i in range(0, 5)]
-
-    resp = requests.get(url)
-    if not resp.ok:
-        return {}
-
-    soup = BeautifulSoup(resp.content, 'lxml')
-    # First (or current) day of week
-    today_menu = soup.find(class_='todays-menu')
-    day_date = datetime.strptime(today_menu.find('p').text.split(' ')[1],
-                                 '%d.%m.%Y').date()
-
-    if day_date in days:
-        day_menu = []
-        for course in today_menu.find('ul'):
-            if len(course.string) > 3:
-                # Skip newlines
-                day_menu.append(course.string)
-        if len(day_menu) > 2:
-            # Need to have enough courses to ensure that the
-            # restaurant is open
-            menus[day_date.isoformat()] = day_menu
-
-    # Remaining days
-    week_menu = soup.find(id='week')
-    for child in week_menu.children:
-        if child.name == 'p':
-            # A day name
-            day_date = datetime.strptime(child.string.split(' ')[1],
-                                         '%d.%m.%Y').date()
-
-            if day_date in days:
-                day_menu = []
-                for item in child.next_sibling.next_sibling.children:
-                    if item and item.string and len(item.string) > 3:
-                        # Skip newlines
-                        day_menu.append(item.string)
-                if len(day_menu) > 1:
-                    # Need to have enough courses to ensure that the
-                    # restaurant is open
-                    menus[day_date.isoformat()] = day_menu
-
-    return {'name': name, 'menu': menus}
-
-
-def parse_metropol_menu(name, url):
-    """Parses the menu for the current week for the Metropol lunch restaurant
-    in Innopoli 2 from the restaurant's web page."""
-    pattern = re.compile(r'([\w\s:;,-]+) \d+,\d+.+')
-    day_ids = ['day-ma', 'day-ti', 'day-ke', 'day-to', 'day-pe']
-    menu = {}
-
-    resp = requests.get(url)
-    if not resp.ok:
-        return {}
-
-    soup = BeautifulSoup(resp.content, 'lxml')
-    for day_id in day_ids:
-        if not soup.find(id=day_id):
-            continue
-        day_date = soup.find(id=day_id).find('p').find('strong').text.split(' ')[1]
-        menu_list = soup.find(id=day_id).find_all('li')
-        day_menu = []
-
-        for item in menu_list:
-            match = re.match(pattern, item.text)
-            if match:
-                day_menu.append(match.groups()[0])
-
-        if len(day_menu) > 1:
-            parsed_date = datetime.strptime(day_date, '%d.%m.%Y').date()
-            menu[parsed_date.isoformat()] = day_menu
-
-    return {'name': name, 'menu': menu}
-
-
-def parse_iss_menu(name, url):
-    """Parses the menu for the current week for a ISS lunch restaurant
-    from the restaurant's web page."""
-    day_names = ['Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai']
-    pattern = re.compile(r'(\d+\.\d+)\.?')
-    menu = {}
-    day_menu = []
-    current_date = None
-
-    resp = requests.get(url)
-    if not resp.ok:
-        return {}
-
-    soup = BeautifulSoup(resp.content, 'lxml')
-    if not soup.find_all('table'):
-        return {}
-
-    rows = soup.find_all('table')[0].find_all('tr')
-    for idx, row in enumerate(rows):
-        if idx == 0:
-            continue
-
-        columns = row.find_all('td')
-        if columns[0].text in day_names and \
-           re.match(pattern, columns[1].text):
-            match = re.match(pattern, columns[1].text)
-            current_date = datetime.strptime('{}.{}'.format(match.group(1),
-                                                            datetime.now().strftime('%Y')),
-                                             '%d.%m.%Y').date().isoformat()
-        else:
-            if len(columns[1].text) > 5:
-                day_menu.append('{}: {}'.format(columns[0].text, columns[1].text))
-            if (len(columns[0].text) <= 1 and len(columns[1].text) <= 1) or \
-               idx == (len(rows) - 1):
-                if len(day_menu) > 2:
-                    menu[current_date] = day_menu
-                day_menu = []
-
-    return {'name': name, 'menu': menu}
 
 
 def get_menus(restaurants):
@@ -283,22 +112,14 @@ def get_menus(restaurants):
     menu = {}
 
     for res in restaurants:
-        if res['type'] == 'amica':
+        if res['type'] == 'foodco':
             if 'language' in res:
-                menu = get_amica_menu(res['name'], res['restaurantNumber'],
-                                      language=res['language'])
+                menu = get_foodco_menu(res['name'], res['restaurantNumber'],
+                                       language=res['language'])
             else:
-                menu = get_amica_menu(res['name'], res['restaurantNumber'])
-        elif res['type'] == 'antell':
-            menu = parse_antell_menu(res['name'], res['id'])
+                menu = get_foodco_menu(res['name'], res['restaurantNumber'])
         elif res['type'] == 'sodexo':
             menu = get_sodexo_menu(res['name'], res['id'])
-        elif res['type'] == 'taffa':
-            menu = parse_taffa_menu(res['name'], res['url'])
-        elif res['type'] == 'metropol':
-            menu = parse_metropol_menu(res['name'], res['url'])
-        elif res['type'] == 'iss':
-            menu = parse_iss_menu(res['name'], res['url'])
 
         if len(menu) >= 1 and len(menu['menu']) >= 1:
             # Ignore empty menus denoting an error
@@ -309,31 +130,38 @@ def get_menus(restaurants):
 
 def main():
     """The main function of this module."""
+    logging.basicConfig(filename='menu_scraper.log',
+                        level=logging.INFO,
+                        format='%(asctime)s:%(levelname)s:%(message)s')
+    config_file = 'menu_scraper_config.json'
+
     parser = argparse.ArgumentParser(description='Extract lunch restaurant menus.')
-    parser.add_argument('config', type=str, help='restaurant configuration file')
+    parser.add_argument('--config', dest='config',
+                        help=f'config file to use, default is {config_file}')
 
     args = parser.parse_args()
+    if args.config:
+        config_file = args.config
 
     try:
-        with open(args.config, 'r') as conf_file:
+        with open(config_file, 'r', encoding='utf-8') as conf_file:
             config = json.load(conf_file)
-        all_menus = get_menus(config['restaurants'])
+            all_menus = get_menus(config['restaurants'])
     except FileNotFoundError:
-        print('Could not find configuration file: {}'.format(args.config))
-        exit(1)
+        logging.error('Could not find configuration file: %s', config_file)
+        sys.exit(1)
 
     resp = requests.post(config['backendUrl'], json=all_menus, timeout=5)
-    timestamp = datetime.now().isoformat()
     if not resp.ok:
-        print('{0}: Menu extraction failed, HTTP status code: {1}'.format(timestamp,
-                                                                          str(resp.status_code)))
+        logging.error('Menu extraction failed, HTTP status code: %s',
+                      {str(resp.status_code)})
     else:
         status = resp.json()
         if status['status'] == 'success':
-            print('{}: Menu extraction succeeded'.format(timestamp))
+            logging.info('Menu extraction succeeded')
         else:
-            print('{}: Menu extraction failed, error: {}. See server log for more details.'.
-                  format(timestamp, status['cause']))
+            logging.error('Menu extraction failed, error: %s. Check server log.',
+                          status['cause'])
 
 
 if __name__ == '__main__':
