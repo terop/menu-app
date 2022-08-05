@@ -1,6 +1,7 @@
+DATE := $(shell date +%Y-%m-%d)
 
 build: update
-	docker build -t menu-app .
+	podman build -t menu-app:$(DATE) .
 
-update: # update Docker base image
-	docker pull python:3.8.6-slim-buster
+update: # update base image
+	podman pull python:3.10-alpine

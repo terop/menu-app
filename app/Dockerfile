@@ -1,12 +1,10 @@
-FROM python:3.8.6-slim-buster
+FROM python:3.10-alpine
 LABEL maintainer="tero.paloheimo@iki.fi"
 
-WORKDIR /usr/local/app
+WORKDIR /usr/src/app
 COPY . .
 
-# Install dependencies for psycogpg2
-RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-RUN pip install -r requirements.txt
-RUN pip install gunicorn
+RUN pip install --upgrade pip && \
+    pip install pipenv && pipenv install --system --deploy && pip install gunicorn
 EXPOSE 5000
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "-w", "4", "menu:app"]
