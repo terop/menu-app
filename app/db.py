@@ -1,6 +1,7 @@
 """Module for handling database operations."""
 
 import logging
+from os import environ
 
 import psycopg  # pylint: disable=import-error
 from psycopg.types.json import Jsonb  # pylint: disable=import-error
@@ -8,8 +9,15 @@ from psycopg.types.json import Jsonb  # pylint: disable=import-error
 
 def get_conn_string(config):
     """Returns the database connection string."""
-    return f'host={config["DB_HOST"]} dbname={config["DB_NAME"]} ' \
-        f'user={config["DB_USER"]} password={config["DB_PASSWORD"]}'
+    db_config = {
+        'host': environ['DB_HOST'] if 'DB_HOST' in environ else config['DB_HOST'],
+        'name': environ['DB_NAME'] if 'DB_NAME' in environ else config['DB_NAME'],
+        'username': environ['DB_USERNAME'] if 'DB_USERNAME' in environ else config['DB_USER'],
+        'password': environ['DB_PASSWORD'] if 'DB_PASSWORD' in environ else config['DB_PASSWORD']
+    }
+
+    return f'host={db_config["host"]} dbname={db_config["name"]} ' \
+        f'user={db_config["username"]} password={db_config["password"]}'
 
 
 def insert_menu(config, menus):
