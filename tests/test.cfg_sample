@@ -1,3 +1,0 @@
-# Test settings
-[db]
-DB_CON_STRING = postgresql+psycopg2://username:pwd@host:5432/dbname_test
