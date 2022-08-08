@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 requests = "*"
+iso8601 = "*"
 
 [dev-packages]
 

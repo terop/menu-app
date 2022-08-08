@@ -6,15 +6,15 @@ import argparse
 import json
 import logging
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date,timedelta
 
+import iso8601  # pylint: disable=import-error
 import requests
 
 
 def get_foodco_menu(name, restaurant_number, language='en'):
     """Fetches the menu for the current week of Food & Co restaurants from
     their API."""
-    # NOTE! Currently untested, does not work
     menu = {}
 
     # pylint: disable=no-member
@@ -25,24 +25,18 @@ def get_foodco_menu(name, restaurant_number, language='en'):
         return {}
 
     full_menu = resp.json()
-    if not full_menu['LunchMenus']:
+    if not full_menu['MenusForDays']:
         return {}
 
-    for day_menu in full_menu['LunchMenus'][0:5]:
-        menu_date = datetime.strptime(day_menu['Date'], '%d.%m.%Y').date().isoformat()
+    for day_menu in full_menu['MenusForDays'][0:5]:
+        menu_date = iso8601.parse_date(day_menu['Date']).date().isoformat()
         if day_menu['SetMenus']:
             menu[menu_date] = []
 
         # Ensure there is at least one menu for the day
         if day_menu['SetMenus']:
-            for i in range(len(day_menu['SetMenus'])):
-                menu[menu_date].append(day_menu['SetMenus'][i]['Name'])
-                meals = day_menu['SetMenus'][i]['Meals']
-                for _, meal in enumerate(meals):
-                    menu[menu_date].append(meal['Name'])
-
-                if day_menu['SetMenus'][i]['Price']:
-                    menu[menu_date].append(day_menu['SetMenus'][i]['Price'])
+            for comp in day_menu['SetMenus'][0]['Components']:
+                menu[menu_date].append(comp)
         try:
             if not menu[menu_date]:
                 # Delete empty menu
