@@ -6,7 +6,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import date,timedelta
+from datetime import date, timedelta
 
 import iso8601  # pylint: disable=import-error
 import requests
@@ -20,7 +20,7 @@ def get_foodco_menu(name, restaurant_number, language='en'):
     # pylint: disable=no-member
     url = 'https://www.foodandco.fi/modules/json/json/Index?costNumber=' \
         f'{restaurant_number}&language={language}'
-    resp = requests.get(url)
+    resp = requests.get(url, timeout=10)
     if not resp.ok:
         return {}
 
@@ -72,7 +72,7 @@ def get_sodexo_menu(name, restaurant_id):
     day_mapping = get_weekday_mapping()
     menus = {}
 
-    resp = requests.get(f'{base_url}{restaurant_id}')
+    resp = requests.get(f'{base_url}{restaurant_id}', timeout=10)
     if not resp.ok:
         return {}
 
