@@ -3,7 +3,7 @@
 
 import logging
 from collections import OrderedDict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from flask import Flask, jsonify, render_template, request  # pylint: disable=import-error
 
@@ -22,9 +22,15 @@ def index():
     args = {'title': title,
             'root': app.config['APPLICATION_ROOT']}
 
-    today = date.today().isoformat()
-    menus = db.get_menu(app.config, today)
-    show_week = 'week' in request.args and request.args['week'] == 'true'
+    show_week = 'mode' in request.args and request.args['mode'] == 'week'
+    today = date.today()
+
+    if show_week:
+        start_date = today - timedelta(days=today.weekday())
+        menus = db.get_menu(app.config, start_date.isoformat(), today.isoformat())
+    else:
+        menus = db.get_menu(app.config, today.isoformat(), today.isoformat())
+
     args['date'] = date.today().strftime('%A %d.%m.%Y')
     args['week'] = show_week
 
@@ -66,8 +72,8 @@ def format_menu(menus, show_week=False):
                                        'menu': menu['menu'][day]})
         # Reformat dates
         week_menu_format = {}
-        # pylint: disable=consider-using-dict-items,consider-iterating-dictionary
-        for key in week_menu.keys():
+        # pylint: disable=consider-using-dict-items
+        for key in week_menu:
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
