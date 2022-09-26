@@ -34,7 +34,7 @@
         <main class="container">
             <h3>{% if week %}Week menu{% else %}Day menu{% endif %}</h3>
             <p style="font-size: 1.1em;">Today is {{ date }}.</p>
-            {% if not week and not menu %}
+            {% if not menu %}
                 <div class="alert alert-danger" role="alert">
                     There are no menus to show for today
                 </div>
