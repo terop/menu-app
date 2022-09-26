@@ -27,9 +27,9 @@ def index():
 
     if show_week:
         start_date = today - timedelta(days=today.weekday())
-        menus = db.get_menu(app.config, start_date.isoformat(), today.isoformat())
+        menus = db.get_menu(app.config, start_date.isoformat())
     else:
-        menus = db.get_menu(app.config, today.isoformat(), today.isoformat())
+        menus = db.get_menu(app.config, today.isoformat())
 
     args['date'] = date.today().strftime('%A %d.%m.%Y')
     args['week'] = show_week

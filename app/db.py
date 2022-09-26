@@ -42,21 +42,20 @@ def insert_menu(config, menus):
     return True
 
 
-def get_menu(config, start_date, end_date):
-    """Returns the last menu for the current date between the start and
-    end dates. Return value: menu as a Python object on success, None on failure.
+def get_menu(config, start_date):
+    """Returns the last menu >= the start date. Return value: menu as a Python object on
+    success, None on failure.
     """
     try:
         with psycopg.connect(get_conn_string(config)) as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT menu FROM menus WHERE start_date >= %s AND end_date <= %s '
-                            'ORDER BY id DESC',
-                            (start_date, end_date))
-                rows = cur.fetchall()
+                cur.execute('SELECT menu FROM menus WHERE start_date >= %s ORDER BY id DESC',
+                            (start_date,))
+                rows = cur.fetchone()
                 if not rows:
                     return []
 
-                return rows[0][0]
+                return rows[0]
     except psycopg.Error as err:
         logging.error('Menu query failed: %s', err)
         return None
