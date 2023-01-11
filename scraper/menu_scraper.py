@@ -18,7 +18,7 @@ def get_foodco_menu(name, restaurant_number, language='en'):
     menu = {}
 
     # pylint: disable=no-member
-    url = 'https://www.foodandco.fi/modules/json/json/Index?costNumber=' \
+    url = 'https://www.compass-group.fi/menuapi/feed/json?costNumber=' \
         f'{restaurant_number}&language={language}'
     resp = requests.get(url, timeout=10)
     if not resp.ok:
