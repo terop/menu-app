@@ -1,6 +1,8 @@
 FROM python:3.10-alpine
 LABEL maintainer="tero.paloheimo@iki.fi"
 
+RUN apk update && apk upgrade
+
 RUN apk add --no-cache dumb-init
 
 # Add user to run the app
