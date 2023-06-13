@@ -6,7 +6,7 @@ authors = ["Tero Paloheimo <tero.paloheimo@iki.fi>"]
 packages = [{include = "menu_scraper.py"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 requests = "^2.28.2"
 iso8601 = "^1.1.0"
 
