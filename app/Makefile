@@ -1,7 +1,9 @@
 DATE := $(shell date +%Y-%m-%d)
+IMAGE_NAME := menu-app:$(DATE)
 
 build: update
-	podman build -t menu-app:$(DATE) .
+	podman build -t $(IMAGE_NAME) .
+	podman tag $(IMAGE_NAME) $(shell whoami)/$(IMAGE_NAME)
 
 update: # update base image
-	podman pull python:3.10-alpine
+	podman pull python:3.11-alpine

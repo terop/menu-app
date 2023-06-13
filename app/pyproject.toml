@@ -6,7 +6,7 @@ authors = ["Tero Paloheimo <tero.paloheimo@iki.fi>"]
 packages = [{include = "menu.py"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 Flask = "^2.2.3"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 
