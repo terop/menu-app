@@ -14,3 +14,8 @@ iso8601 = "^1.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ["B", "D", "E", "F", "G", "I", "N", "PL", "RUF", "W"]
+ignore = ["D203", "D213"]
+target-version = "py311"

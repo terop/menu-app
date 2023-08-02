@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """A module for accessing and scraping various lunch restaurant menus.
-Menus are sent to a backend service for storage and display."""
+
+Menus are sent to a backend service for storage and display.
+"""
 
 import argparse
 import json
@@ -8,16 +10,14 @@ import logging
 import sys
 from datetime import date, timedelta
 
-import iso8601  # pylint: disable=import-error
+import iso8601
 import requests
 
 
 def get_foodco_menu(name, restaurant_number, language='en'):
-    """Fetches the menu for the current week of Food & Co restaurants from
-    their API."""
+    """Fetch the menu for the current week of Food & Co restaurants from their API."""
     menu = {}
 
-    # pylint: disable=no-member
     url = 'https://www.compass-group.fi/menuapi/feed/json?costNumber=' \
         f'{restaurant_number}&language={language}'
     resp = requests.get(url, timeout=10)
@@ -49,12 +49,13 @@ def get_foodco_menu(name, restaurant_number, language='en'):
 
 
 def get_sodexo_menu(name, restaurant_id):
-    """Fetches the current weeks menu for a Sodexo restaurant from its
-    JSON formatted menu."""
+    """Fetch the current weeks menu for a Sodexo restaurant.
+
+    The menu is fetched from the restaurant's JSON formatted menu.
+    """
 
     def get_weekday_mapping():
-        """Returns a mapping between weekday name and the date matching
-        the weekday."""
+        """Return a mapping between weekday name and the date matching the weekday."""
         days = {}
         monday = date.today()
 
@@ -68,6 +69,7 @@ def get_sodexo_menu(name, restaurant_id):
 
         return days
 
+    courses_min_amount = 2
     base_url = "https://www.sodexo.fi/en/ruokalistat/output/weekly_json/"
     day_mapping = get_weekday_mapping()
     menus = {}
@@ -80,7 +82,7 @@ def get_sodexo_menu(name, restaurant_id):
     for meal_date in json_menu['mealdates']:
         courses = []
 
-        if len(meal_date['courses']) < 2:
+        if len(meal_date['courses']) < courses_min_amount:
             continue
         for course in meal_date['courses'].values():
             course_text = ''
@@ -100,8 +102,10 @@ def get_sodexo_menu(name, restaurant_id):
 
 
 def get_menus(restaurants):
-    """Returns menus of all restaurants given in the configuration.
-    Restaurant types are: amica, antell, sodexo."""
+    """Return menus of all restaurants given in the configuration.
+
+    Restaurant types are: amica, antell, sodexo.
+    """
     menus = []
     menu = {}
 
@@ -123,7 +127,7 @@ def get_menus(restaurants):
 
 
 def main():
-    """The main function of this module."""
+    """Run the module code."""
     logging.basicConfig(filename='menu_scraper.log',
                         level=logging.INFO,
                         format='%(asctime)s:%(levelname)s:%(message)s')

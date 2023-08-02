@@ -5,9 +5,9 @@ import logging
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
-from flask import Flask, jsonify, render_template, request  # pylint: disable=import-error
+from flask import Flask, jsonify, render_template, request
 
-import db  # pylint: disable=import-error
+import db
 
 app = Flask(__name__)
 app.config.from_pyfile('menu.cfg')
@@ -68,7 +68,6 @@ def format_menu(menus, show_week=False):
                                        'menu': menu['menu'][day]})
         # Reformat dates
         week_menu_format = {}
-        # pylint: disable=consider-using-dict-items
         for key in week_menu:
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
