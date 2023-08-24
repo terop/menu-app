@@ -34,13 +34,12 @@ def insert_menu(config, menus):
     end_date = max(max(menu['menu'].keys()) for menu in menus)
 
     try:
-        with psycopg.connect(get_conn_string(config)) as conn:
-            with conn.cursor() as cur:
-                cur.execute('INSERT INTO menus (start_date, end_date, menu) '
-                            'VALUES (%s, %s, %s)',
-                            (start_date, end_date, Jsonb(menus)))
-    except psycopg.Error as err:
-        logging.error('Menu insert failed: %s', err)
+        with psycopg.connect(get_conn_string(config)) as conn, conn.cursor() as cur:
+            cur.execute('INSERT INTO menus (start_date, end_date, menu) '
+                        'VALUES (%s, %s, %s)',
+                        (start_date, end_date, Jsonb(menus)))
+    except psycopg.Error:
+        logging.exception('Menu insert failed')
         return False
 
     return True
@@ -52,16 +51,15 @@ def get_menu(config, start_date):
     Return value: menu as a Python object on success or None on failure.
     """
     try:
-        with psycopg.connect(get_conn_string(config)) as conn:
-            with conn.cursor() as cur:
-                cur.execute('SELECT menu FROM menus WHERE start_date >= %s '
-                            'ORDER BY id DESC',
-                            (start_date,))
-                rows = cur.fetchone()
-                if not rows:
-                    return []
+        with psycopg.connect(get_conn_string(config)) as conn, conn.cursor() as cur:
+            cur.execute('SELECT menu FROM menus WHERE start_date >= %s '
+                        'ORDER BY id DESC',
+                        (start_date,))
+            rows = cur.fetchone()
+            if not rows:
+                return []
 
-                return rows[0]
-    except psycopg.Error as err:
-        logging.error('Menu query failed: %s', err)
+            return rows[0]
+    except psycopg.Error:
+        logging.exception('Menu query failed')
         return None

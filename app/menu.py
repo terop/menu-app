@@ -82,11 +82,9 @@ def format_menu(menus, show_week=False):
 
         return week_menu_days
 
-    menu_data = []
     today = date.today().isoformat()
-    for menu in menus:
-        if today in list(menu['menu'].keys()):
-            menu_data.append([menu['name'], menu['menu'][today]])
+    menu_data = [[menu['name'], menu['menu'][today]] for menu in menus \
+                 if today in list(menu['menu'].keys())]
 
     return list(chunks(menu_data, 3))
 

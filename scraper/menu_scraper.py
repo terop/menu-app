@@ -36,7 +36,7 @@ def get_foodco_menu(name, restaurant_number, language='en'):
         # Ensure there is at least one menu for the day
         if day_menu['SetMenus']:
             for comp in day_menu['SetMenus'][0]['Components']:
-                menu[menu_date].append(comp)
+                menu[menu_date].append(comp)  # noqa: PERF402
         try:
             if not menu[menu_date]:
                 # Delete empty menu
@@ -146,7 +146,7 @@ def main():
             config = json.load(conf_file)
             all_menus = get_menus(config['restaurants'])
     except FileNotFoundError:
-        logging.error('Could not find configuration file: %s', config_file)
+        logging.exception('Could not find configuration file: %s', config_file)
         sys.exit(1)
 
     resp = requests.post(f'{config["backendUrl"]}/add', json=all_menus, timeout=5)
