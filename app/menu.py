@@ -94,4 +94,4 @@ if __name__ == '__main__':
                         format='%(asctime)s:%(levelname)s:%(message)s')
 
     logging.info('Starting menu server')
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0') # noqa: S104

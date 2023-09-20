@@ -9,6 +9,7 @@ import json
 import logging
 import sys
 from datetime import date, timedelta
+from pathlib import Path
 
 import iso8601
 import requests
@@ -36,7 +37,7 @@ def get_foodco_menu(name, restaurant_number, language='en'):
         # Ensure there is at least one menu for the day
         if day_menu['SetMenus']:
             for comp in day_menu['SetMenus'][0]['Components']:
-                menu[menu_date].append(comp)  # noqa: PERF402
+                menu[menu_date].append(comp)
         try:
             if not menu[menu_date]:
                 # Delete empty menu
@@ -63,7 +64,7 @@ def get_sodexo_menu(name, restaurant_id):
             monday -= timedelta(days=monday.weekday())
 
         current_day = monday
-        for _ in range(0, 5):
+        for _ in range(5):
             days[current_day.strftime('%A')] = current_day.isoformat()
             current_day += timedelta(days=1)
 
@@ -142,7 +143,7 @@ def main():
         config_file = args.config
 
     try:
-        with open(config_file, 'r', encoding='utf-8') as conf_file:
+        with Path(config_file).open('r', encoding='utf-8') as conf_file:
             config = json.load(conf_file)
             all_menus = get_menus(config['restaurants'])
     except FileNotFoundError:
