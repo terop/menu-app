@@ -2,7 +2,7 @@ LABEL maintainer="tero.paloheimo@iki.fi"
 
 FROM python:3.11-alpine as python
 ENV PYTHONUNBUFFERED=true
-RUN apk update && apk upgrade
+RUN apk update && apk upgrade && python3 -m pip install --upgrade pip
 
 RUN apk add --no-cache dumb-init
 
