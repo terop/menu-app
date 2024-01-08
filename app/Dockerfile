@@ -13,7 +13,7 @@ RUN adduser --no-create-home -u 1000 -D ${APPLICATION_USER}
 RUN mkdir /usr/src/app && chown -R ${APPLICATION_USER} /usr/src/app
 
 COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
-    db.py menu.py templates/ menu.cfg /usr/src/app
+     db.py menu.py templates/ menu.cfg /usr/src/app
 WORKDIR /usr/src/app
 
 FROM python as poetry
@@ -29,8 +29,6 @@ RUN poetry install --no-interaction --no-ansi -vv
 FROM python as runtime
 ENV PATH="/usr/src/app/.venv/bin:${PATH}"
 COPY --from=poetry /usr/src/app /usr/src/app
-
-RUN pip install gunicorn
 
 EXPOSE 5000
 
