@@ -17,8 +17,7 @@ app.config.from_pyfile('menu.cfg')
 @app.route('/')
 def index():
     """Index route."""
-    title = app.config['MENU_PAGE_TITLE'] if 'MENU_PAGE_TITLE' in app.config \
-        else 'Change me!'
+    title = app.config.get('MENU_PAGE_TITLE', 'Change me!')
     args = {'title': title,
             'root': app.config['APPLICATION_ROOT']}
 
@@ -94,4 +93,4 @@ if __name__ == '__main__':
                         format='%(asctime)s:%(levelname)s:%(message)s')
 
     logging.info('Starting menu server')
-    app.run(host='0.0.0.0') # noqa: S104
+    app.run(host='0.0.0.0')  # noqa: S104
