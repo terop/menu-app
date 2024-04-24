@@ -7,9 +7,9 @@ packages = [{include = "menu.py"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-Flask = "^2.2.3"
+Flask = "^3.0.0"
 psycopg = {extras = ["binary"], version = "^3.1.9"}
-gunicorn = "^21.2.0"
+gunicorn = "^22.0.0"
 
 
 [build-system]
