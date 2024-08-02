@@ -2,6 +2,7 @@
 
 import logging
 from os import environ
+from pathlib import Path
 
 import psycopg
 from psycopg.types.json import Jsonb
@@ -14,9 +15,15 @@ def get_conn_string(config):
         'name': environ['DB_NAME'] if 'DB_NAME' in environ else config['DB_NAME'],
         'username': environ['DB_USERNAME'] if 'DB_USERNAME' in environ \
         else config['DB_USER'],
-        'password': environ['DB_PASSWORD'] if 'DB_PASSWORD' in environ else \
-        config['DB_PASSWORD']
+        'password': config.get('DB_PASSWORD', None)
     }
+    if not db_config['password']:
+        password_file = environ.get('DB_PASSWORD_FILE', None)
+        if password_file:
+            with Path.open(password_file, 'r') as pw_file:
+                db_config['password'] = pw_file.readline().strip()
+        else:
+            logging.error('No database server password provided')
 
     return f'host={db_config["host"]} dbname={db_config["name"]} ' \
         f'user={db_config["username"]} password={db_config["password"]}'
