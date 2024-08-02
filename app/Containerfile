@@ -13,7 +13,9 @@ RUN adduser --no-create-home -u 1000 -D ${APPLICATION_USER}
 RUN mkdir /usr/src/app && chown -R ${APPLICATION_USER} /usr/src/app
 
 COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
-     db.py menu.py templates/ menu.cfg /usr/src/app
+     db.py menu.py menu.cfg /usr/src/app/
+COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+     templates/ /usr/src/app/templates/
 WORKDIR /usr/src/app
 
 FROM python as poetry
@@ -23,7 +25,6 @@ RUN apk add --no-cache curl
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY pyproject.toml poetry.lock ./
-COPY . ./
 RUN poetry install --no-interaction --no-ansi -vv
 
 FROM python as runtime
