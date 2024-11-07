@@ -1,10 +1,17 @@
-FROM python:3.13-alpine as python
-ENV PYTHONUNBUFFERED=true
-RUN apk update && apk upgrade && python3 -m pip install --upgrade pip
-
-RUN apk add --no-cache dumb-init
+FROM ghcr.io/astral-sh/uv:python3.13-alpine AS builder
+ENV UV_COMPILE_BYTECODE=1
+WORKDIR /app
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
 
 LABEL org.opencontainers.image.authors="tero.paloheimo@iki.fi"
+
+FROM python:3.13-alpine
+ENV PYTHONUNBUFFERED=true
+
+RUN apk update && apk upgrade
+RUN apk add --no-cache dumb-init
 
 # Add user to run the app
 ARG APPLICATION_USER=appuser
@@ -12,26 +19,21 @@ RUN adduser --no-create-home -u 1000 -D ${APPLICATION_USER}
 
 RUN mkdir /usr/src/app && chown -R ${APPLICATION_USER} /usr/src/app
 
-COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
-     db.py menu.py menu.cfg /usr/src/app/
-COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
-     templates/ /usr/src/app/templates/
 WORKDIR /usr/src/app
 
-FROM python as poetry
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true
-ENV PATH="/root/.local/bin:${PATH}"
-RUN apk add --no-cache curl
+# Copy the application from the builder
+COPY --from=builder --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+     /app .
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-interaction --no-ansi -vv
+COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+     db.py menu.py menu.cfg .
+COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+     templates/ /usr/src/app/templates/
 
-FROM python as runtime
+# Place executables in the environment at the front of the path
 ENV PATH="/usr/src/app/.venv/bin:${PATH}"
-COPY --from=poetry /usr/src/app /usr/src/app
 
 EXPOSE 5000
 
 USER ${APPLICATION_USER}
-CMD ["dumb-init", "gunicorn", "--bind", "0.0.0.0:5000", "-w", "4", "menu:app"]
+CMD ["dumb-init", "python", "-m", "gunicorn", "--bind", "0.0.0.0:5000", "-w", "4", "menu:app"]

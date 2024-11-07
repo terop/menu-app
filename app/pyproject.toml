@@ -1,20 +1,17 @@
-[tool.poetry]
-name = "menu-app"
+[project]
+name = "app"
 version = "0.1.0"
-description = "Restaurant menu display application"
-authors = ["Tero Paloheimo <tero.paloheimo@iki.fi>"]
-packages = [{include = "menu.py"}]
-
-[tool.poetry.dependencies]
-python = "^3.13"
-Flask = "^3.0.0"
-psycopg = {extras = ["binary"], version = "^3.1.9"}
-gunicorn = "^22.0.0"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+description = "Application part of menu-app"
+readme = "README.md"
+authors = [
+  {name = "Tero Paloheimo", email = "tero.paloheimo@iki.fi"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.0.3",
+    "gunicorn>=23.0.0",
+    "psycopg[binary]>=3.2.3",
+]
 
 [tool.ruff]
 lint.select = ["B", "D", "E", "F", "G", "I", "N", "PERF", "PIE", "PL", "PTH", "SIM", "RUF", "S", "TRY", "W"]
