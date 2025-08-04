@@ -1,0 +1,35 @@
+FROM ghcr.io/astral-sh/uv:python3.13-alpine AS builder
+
+ENV UV_COMPILE_BYTECODE=1
+WORKDIR /app
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
+
+LABEL org.opencontainers.image.authors="tero.paloheimo@iki.fi"
+
+FROM python:3.13-alpine
+
+RUN apk update && apk upgrade
+RUN apk add --no-cache dumb-init
+
+# Add user to run the app
+ARG APPLICATION_USER=appuser
+RUN adduser --no-create-home -u 1000 -D ${APPLICATION_USER}
+
+RUN mkdir /usr/src/app && chown -R ${APPLICATION_USER} /usr/src/app
+
+WORKDIR /usr/src/app
+
+# Copy the application from the builder
+COPY --from=builder --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+    /app .
+
+COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+     menu_scraper_config.json menu_scraper.py ./
+
+# Place executables in the environment at the front of the path
+ENV PATH="/usr/src/app/.venv/bin:${PATH}"
+
+USER ${APPLICATION_USER}
+ENTRYPOINT ["dumb-init", "python", "menu_scraper.py"]

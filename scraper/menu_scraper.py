@@ -9,6 +9,7 @@ import json
 import logging
 import sys
 from datetime import date, timedelta
+from os import environ
 from pathlib import Path
 
 import iso8601
@@ -105,7 +106,7 @@ def get_sodexo_menu(name, restaurant_id):
 def get_menus(restaurants):
     """Return menus of all restaurants given in the configuration.
 
-    Restaurant types are: amica, antell, sodexo.
+    Restaurant types are: foodco, sodexo.
     """
     menus = []
     menu = {}
@@ -129,7 +130,18 @@ def get_menus(restaurants):
 
 def main():
     """Run the module code."""
-    logging.basicConfig(filename='menu_scraper.log',
+    pod_state_dir = None
+    if 'POD_STATE_DIRECTORY' in environ:
+        pod_state_dir = environ['POD_STATE_DIRECTORY']
+        if not Path(pod_state_dir).exists() or not Path(pod_state_dir).is_dir():
+            print('State file directory "%s" does not exist, exiting', pod_state_dir,
+                  file=sys.stderr)
+            sys.exit(1)
+
+    scraper_log = f'{pod_state_dir}/menu_scraper.log' if pod_state_dir \
+        else 'menu_scraper.log'
+
+    logging.basicConfig(filename=scraper_log,
                         level=logging.INFO,
                         format='%(asctime)s:%(levelname)s:%(message)s')
     config_file = 'menu_scraper_config.json'
