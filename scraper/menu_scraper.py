@@ -15,6 +15,8 @@ from pathlib import Path
 import iso8601
 import requests
 
+logger = logging.getLogger('scraper')
+
 
 def get_foodco_menu(name, restaurant_number, language='en'):
     """Fetch the menu for the current week of Food & Co restaurants from their API."""
@@ -159,20 +161,20 @@ def main():
             config = json.load(conf_file)
             all_menus = get_menus(config['restaurants'])
     except FileNotFoundError:
-        logging.exception('Could not find configuration file: %s', config_file)
+        logger.exception('Could not find configuration file: %s', config_file)
         sys.exit(1)
 
     resp = requests.post(f'{config["backendUrl"]}/add', json=all_menus, timeout=5)
     if not resp.ok:
-        logging.error('Menu extraction failed, HTTP status code: %s',
-                      str(resp.status_code))
+        logger.error('Menu extraction failed, HTTP status code: %s',
+                     str(resp.status_code))
     else:
         status = resp.json()
         if status['status'] == 'success':
-            logging.info('Menu extraction succeeded')
+            logger.info('Menu extraction succeeded')
         else:
-            logging.error('Menu extraction failed, error: %s. Check server log.',
-                          status['cause'])
+            logger.error('Menu extraction failed, error: %s. Check server log.',
+                         status['cause'])
 
 
 if __name__ == '__main__':
