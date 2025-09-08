@@ -7,13 +7,15 @@ from pathlib import Path
 import psycopg
 from psycopg.types.json import Jsonb
 
+logger = logging.getLogger('menu')
+
 
 def get_conn_string(config):
     """Return the database connection string."""
     db_config = {
         'host': environ['DB_HOST'] if 'DB_HOST' in environ else config['DB_HOST'],
         'name': environ['DB_NAME'] if 'DB_NAME' in environ else config['DB_NAME'],
-        'username': environ['DB_USERNAME'] if 'DB_USERNAME' in environ \
+        'username': environ['DB_USERNAME'] if 'DB_USERNAME' in environ
         else config['DB_USER'],
         'password': config.get('DB_PASSWORD', None)
     }
@@ -23,7 +25,7 @@ def get_conn_string(config):
             with Path.open(password_file, 'r') as pw_file:
                 db_config['password'] = pw_file.readline().strip()
         else:
-            logging.error('No database server password provided')
+            logger.error('No database server password provided')
 
     return f'host={db_config["host"]} dbname={db_config["name"]} ' \
         f'user={db_config["username"]} password={db_config["password"]}'
@@ -46,7 +48,7 @@ def insert_menu(config, menus):
                         'VALUES (%s, %s, %s)',
                         (start_date, end_date, Jsonb(menus)))
     except psycopg.Error:
-        logging.exception('Menu insert failed')
+        logger.exception('Menu insert failed')
         return False
 
     return True
@@ -68,5 +70,5 @@ def get_menu(config, start_date):
 
             return rows[0]
     except psycopg.Error:
-        logging.exception('Menu query failed')
+        logger.exception('Menu query failed')
         return None

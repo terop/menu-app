@@ -9,6 +9,8 @@ from flask import Flask, jsonify, render_template, request
 
 import db
 
+logger = logging.getLogger('menu')
+
 app = Flask(__name__)
 app.config.from_pyfile('menu.cfg')
 
@@ -67,7 +69,7 @@ def format_menu(menus, show_week=False):
                                        'menu': menu['menu'][day]})
         # Reformat dates
         week_menu_format = {}
-        for key in week_menu:
+        for key in week_menu:  # noqa: PLC0206
             new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
@@ -82,7 +84,7 @@ def format_menu(menus, show_week=False):
         return week_menu_days
 
     today = date.today().isoformat()
-    menu_data = [[menu['name'], menu['menu'][today]] for menu in menus \
+    menu_data = [[menu['name'], menu['menu'][today]] for menu in menus
                  if today in list(menu['menu'].keys())]
 
     return list(chunks(menu_data, 3))
@@ -92,5 +94,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s:%(levelname)s:%(message)s')
 
-    logging.info('Starting menu server')
+    logger.info('Starting menu server')
     app.run(host='0.0.0.0')  # noqa: S104
