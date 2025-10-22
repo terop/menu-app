@@ -166,8 +166,7 @@ def main():
 
     resp = requests.post(f'{config["backendUrl"]}/add', json=all_menus, timeout=5)
     if not resp.ok:
-        logger.error('Menu extraction failed, HTTP status code: %s',
-                     str(resp.status_code))
+        logger.error('Menu extraction failed, HTTP status code: %s', resp.status_code)
     else:
         status = resp.json()
         if status['status'] == 'success':
