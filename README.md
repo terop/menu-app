@@ -15,7 +15,7 @@ be seen in `menu.cfg_sample`.
 
 ### Docker
 The backend can be run with Docker or Podman. To build the image run the
-`make build` command in the `app` directory. The image will be called `menu-app`.
+`just build` command in the `app` directory. The image will be called `menu-app`.
 
 ## License
 Released under the MIT license. See LICENSE for the full license.
