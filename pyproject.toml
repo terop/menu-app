@@ -2,5 +2,6 @@
 members = ["app", "scraper"]
 
 [tool.ruff]
-lint.select = ["A", "B", "D", "E", "EM", "F", "G", "I", "LOG", "N", "PERF", "PIE", "PL", "PTH", "SIM", "RUF", "S", "TRY", "W"]
+lint.select = ["A", "B", "C4", "D", "DTZ", "E", "EM", "F", "FBT", "FURB", "G", "I", "ISC", "LOG", "N", "PERF", "PIE", "PL", "PTH", "Q", "RET", "RUF", "S", "SIM", "TC", "TRY", "UP", "W"]
 lint.ignore = ["D203", "D213"]
+lint.flake8-quotes.inline-quotes = "single"

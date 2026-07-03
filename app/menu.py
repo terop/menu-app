@@ -3,11 +3,10 @@
 
 import logging
 from collections import OrderedDict
-from datetime import date, datetime, timedelta
-
-from flask import Flask, jsonify, render_template, request
+from datetime import datetime, timedelta, timezone
 
 import db
+from flask import Flask, jsonify, render_template, request
 
 logger = logging.getLogger('menu')
 
@@ -24,7 +23,7 @@ def index():
             'root': app.config['APPLICATION_ROOT']}
 
     show_week = 'mode' in request.args and request.args['mode'] == 'week'
-    today = date.today()
+    today = datetime.now(tz=timezone.utc).date()
     start_date = today - timedelta(days=today.weekday())
     menus = db.get_menu(app.config, start_date.isoformat())
 
@@ -33,7 +32,7 @@ def index():
 
     menu = None
     if menus:
-        menu = format_menu(menus, show_week)
+        menu = format_menu(menus, show_week=show_week)
         args['menu'] = menu
     return render_template('index.tmpl', **args)
 
@@ -52,7 +51,7 @@ def add():
                    cause='database insert error')
 
 
-def format_menu(menus, show_week=False):
+def format_menu(menus, *, show_week=False):
     """Format menu data for easier display."""
     def chunks(list_, size):
         """Yield successive size-sized chunks from list_."""
@@ -70,7 +69,11 @@ def format_menu(menus, show_week=False):
         # Reformat dates
         week_menu_format = {}
         for key in week_menu:  # noqa: PLC0206
-            new_date = datetime.strptime(key, '%Y-%m-%d').strftime('%d.%m.%Y')
+            new_date = (
+                datetime.strptime(key, '%Y-%m-%d')
+                .replace(tzinfo=timezone.utc)
+                .strftime('%d.%m.%Y')
+            )
             week_menu_format[new_date] = list(chunks(week_menu[key], 3))
         del week_menu
 
@@ -78,14 +81,18 @@ def format_menu(menus, show_week=False):
         week_menu_days = OrderedDict()
         # Add weekday before the day's date
         for key in week_menu_ordered:
-            day_str = datetime.strptime(key, '%d.%m.%Y').strftime('%A')
+            day_str = (
+                datetime.strptime(key, '%d.%m.%Y')
+                .replace(tzinfo=timezone.utc)
+                .strftime('%A')
+            )
             week_menu_days[f'{day_str} {key}'] = week_menu_ordered[key]
 
         return week_menu_days
 
-    today = date.today().isoformat()
+    today = datetime.now(tz=timezone.utc).date().isoformat()
     menu_data = [[menu['name'], menu['menu'][today]] for menu in menus
-                 if today in list(menu['menu'].keys())]
+                 if today in menu['menu']]
 
     return list(chunks(menu_data, 3))
 

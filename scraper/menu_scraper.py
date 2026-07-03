@@ -8,7 +8,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import date, timedelta
+from datetime import datetime, timedelta, timezone
 from os import environ
 from pathlib import Path
 
@@ -22,8 +22,7 @@ def get_foodco_menu(name, restaurant_number, language='en'):
     """Fetch the menu for the current week of Food & Co restaurants from their API."""
     menu = {}
 
-    url = 'https://www.compass-group.fi/menuapi/feed/json?costNumber=' \
-        f'{restaurant_number}&language={language}'
+    url = f'https://www.compass-group.fi/menuapi/feed/json?costNumber={restaurant_number}&language={language}'
     resp = requests.get(url, timeout=10)
     if not resp.ok:
         return {}
@@ -61,7 +60,7 @@ def get_sodexo_menu(name, restaurant_id):
     def get_weekday_mapping():
         """Return a mapping between weekday name and the date matching the weekday."""
         days = {}
-        monday = date.today()
+        monday = datetime.now(tz=timezone.utc).date()
 
         if monday.weekday() != 0:
             monday -= timedelta(days=monday.weekday())
@@ -74,7 +73,7 @@ def get_sodexo_menu(name, restaurant_id):
         return days
 
     courses_min_amount = 2
-    base_url = "https://www.sodexo.fi/en/ruokalistat/output/weekly_json/"
+    base_url = 'https://www.sodexo.fi/en/ruokalistat/output/weekly_json/'
     day_mapping = get_weekday_mapping()
     menus = {}
 

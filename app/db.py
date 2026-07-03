@@ -27,8 +27,11 @@ def get_conn_string(config):
         else:
             logger.error('No database server password provided')
 
-    return f'host={db_config["host"]} dbname={db_config["name"]} ' \
-        f'user={db_config["username"]} password={db_config["password"]}'
+    host = db_config['host']
+    name = db_config['name']
+    user = db_config['username']
+    password = db_config['password']
+    return f'host={host} dbname={name} user={user} password={password}'
 
 
 def insert_menu(config, menus):
