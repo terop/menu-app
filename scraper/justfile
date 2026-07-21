@@ -5,7 +5,7 @@ default: image
 
 image: update
     [ -n "${REGISTRY:-}" ] || { echo "REGISTRY is not set" >&2; exit 1; }
-    podman build -t {{IMAGE_NAME}} .
+    podman build -f Containerfile -t {{IMAGE_NAME}} ..
     podman tag {{IMAGE_NAME}} ${REGISTRY}/$(whoami)/{{IMAGE_NAME}}
 
 update: # update base images
