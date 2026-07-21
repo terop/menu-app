@@ -10,7 +10,6 @@ LABEL org.opencontainers.image.authors="tero.paloheimo@iki.fi"
 FROM python:3.14-alpine
 ENV PYTHONUNBUFFERED=true
 
-RUN apk update && apk upgrade
 RUN apk add --no-cache dumb-init
 
 # Add user to run the app
