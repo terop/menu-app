@@ -1,0 +1,6 @@
+backend_url = "http://localhost:5000"
+
+[[restaurants]]
+type = "sodexo"
+name = "Sodexo Tietotekniikantalo"
+id = "142"

@@ -5,7 +5,6 @@ Menus are sent to a backend service for storage and display.
 """
 
 import argparse
-import json
 import logging
 import sys
 from datetime import datetime, timedelta, timezone
@@ -14,6 +13,7 @@ from pathlib import Path
 
 import iso8601
 import requests
+import tomllib
 
 logger = logging.getLogger('scraper')
 
@@ -115,10 +115,10 @@ def get_menus(restaurants):
     for res in restaurants:
         if res['type'] == 'foodco':
             if 'language' in res:
-                menu = get_foodco_menu(res['name'], res['restaurantNumber'],
+                menu = get_foodco_menu(res['name'], res['restaurant_number'],
                                        language=res['language'])
             else:
-                menu = get_foodco_menu(res['name'], res['restaurantNumber'])
+                menu = get_foodco_menu(res['name'], res['restaurant_number'])
         elif res['type'] == 'sodexo':
             menu = get_sodexo_menu(res['name'], res['id'])
 
@@ -145,7 +145,7 @@ def main():
     logging.basicConfig(filename=scraper_log,
                         level=logging.INFO,
                         format='%(asctime)s:%(levelname)s:%(message)s')
-    config_file = 'menu_scraper_config.json'
+    config_file = 'config.toml'
 
     parser = argparse.ArgumentParser(description='Extract lunch restaurant menus.')
     parser.add_argument('--config', dest='config',
@@ -156,14 +156,14 @@ def main():
         config_file = args.config
 
     try:
-        with Path(config_file).open('r', encoding='utf-8') as conf_file:
-            config = json.load(conf_file)
+        with Path(config_file).open('rb') as conf_file:
+            config = tomllib.load(conf_file)
             all_menus = get_menus(config['restaurants'])
     except FileNotFoundError:
         logger.exception('Could not find configuration file: %s', config_file)
         sys.exit(1)
 
-    resp = requests.post(f'{config["backendUrl"]}/add', json=all_menus, timeout=5)
+    resp = requests.post(f'{config["backend_url"]}/add', json=all_menus, timeout=5)
     if not resp.ok:
         logger.error('Menu extraction failed, HTTP status code: %s', resp.status_code)
     else:
