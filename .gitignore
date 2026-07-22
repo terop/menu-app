@@ -1,14 +1,2 @@
 __pycache__/
-GPATH
-GRTAGS
-GTAGS
-menu.cfg
-.cache/
-tests/test.cfg
-menu_app.egg-info/
-# virtualenv ignore
-bin/
-include/
-lib/
-lib64
-pip-selfcheck.json
+config.toml

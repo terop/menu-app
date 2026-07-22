@@ -7,11 +7,11 @@ code to parse or get the restaurant's menu.
 The `menu_scraper.py` script in the `scraper` directory is used fetch the menus.
 Fetching either means screen scraping or accessing an API, this depends on
 the restaurant in question. A sample scraper configuration is available in
-`config.toml_sample`.
+`config.toml.sample`.
 
 The backend is started by running the `menu.py` file located in the `app`
-directory. Its configuration is called `menu.cfg`, a sample configuration can
-be seen in `menu.cfg_sample`.
+directory. Its configuration is called `config.toml`, a sample configuration can
+be seen in `config.toml.sample`.
 
 ### Docker
 The backend can be run with Docker or Podman. To build the image run the

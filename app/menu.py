@@ -4,14 +4,31 @@
 import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import db
+import tomllib
 from flask import Flask, jsonify, render_template, request
 
 logger = logging.getLogger('menu')
 
 app = Flask(__name__)
-app.config.from_pyfile('menu.cfg')
+
+CONFIG_FILE = 'config.toml'
+
+with Path(CONFIG_FILE).open('rb') as conf_file:
+    _config = tomllib.load(conf_file)
+
+_db = _config.get('database', {})
+app.config.update({
+    'DEBUG': _config.get('debug', False),
+    'APPLICATION_ROOT': _config.get('application_root', ''),
+    'MENU_PAGE_TITLE': _config.get('menu_page_title', 'Change me!'),
+    'DB_HOST': _db.get('host'),
+    'DB_NAME': _db.get('name'),
+    'DB_USER': _db.get('user'),
+    'DB_PASSWORD': _db.get('password'),
+})
 
 
 # Routes

@@ -1,0 +1,9 @@
+debug = false
+application_root = "/menu"
+menu_page_title = "Foobar menu"
+
+[database]
+name = "menu_app"
+user = "user1"
+password = "badpassword"
+host = "localhost"
