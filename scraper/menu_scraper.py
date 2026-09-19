@@ -88,11 +88,7 @@ def get_sodexo_menu(name, restaurant_id):
         if len(meal_date['courses']) < courses_min_amount:
             continue
         for course in meal_date['courses'].values():
-            course_text = ''
-            if 'category' in course:
-                course_text += f'{course["category"]}: '
-
-            course_text += course['title_fi']
+            course_text = course['title_fi']
 
             if 'price' in course:
                 course_text += f' {course["price"]}'
